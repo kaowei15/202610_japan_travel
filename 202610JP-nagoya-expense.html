@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 名古屋之旅 - 旅遊記帳</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .main-tab-content { display: none; }
+        .main-tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .category-food { border-left-color: #f97316; }
+        .category-transport { border-left-color: #3b82f6; }
+        .category-hotel { border-left-color: #14b8a6; }
+        .category-shopping { border-left-color: #ec4899; }
+        .category-anime { border-left-color: #8b5cf6; }
+        .category-other { border-left-color: #6b7280; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .sync-status {
+            transition: all 0.3s;
+        }
+        .sync-status.syncing {
+            color: #f59e0b;
+        }
+        .sync-status.synced {
+            color: #10b981;
+        }
+        .sync-status.error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white py-10 px-4 text-center shadow-lg">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2"><i class="fas fa-calculator mr-2"></i>旅遊記帳本</h1>
+        <p class="text-indigo-100 text-lg italic">2026 名古屋之旅 花費紀錄</p>
+        <div class="mt-3 flex items-center justify-center gap-4">
+            <a href="202610JP_nagoya.html" class="text-indigo-200 hover:text-white text-sm">
+                <i class="fas fa-arrow-left mr-1"></i> 返回行程頁面
+            </a>
+            <span class="sync-status text-sm" id="syncStatus">
+                <i class="fas fa-cloud"></i> <span id="syncText">連線中...</span>
+            </span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+
+        <!-- 匯率設定 -->
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-slate-600"><i class="fas fa-yen-sign mr-1"></i>匯率設定:</span>
+                    <input type="number" id="exchangeRate" value="0.2" step="0.01" min="0.01" 
+                        class="w-20 px-2 py-1 border border-slate-300 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-sm text-slate-500">TWD/JPY</span>
+                </div>
+                <div class="text-xs text-slate-400">
+                    <i class="fas fa-sync-alt mr-1"></i>資料自動雲端同步
+                </div>
+            </div>
+        </section>
+
+        <!-- 統計摘要 -->
+        <section class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-lg text-white">
+            <h2 class="text-lg font-bold mb-4"><i class="fas fa-chart-pie mr-2"></i>花費統計</h2>
+            
+            <!-- 個人花費統計 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="bg-indigo-400/30 backdrop-blur rounded-xl p-3 text-center border border-indigo-300/30">
+                    <p class="text-xs opacity-80">🇯🇵 日幣花費</p>
+                    <p class="text-xl font-bold text-indigo-100">¥<span id="totalPersonalJPY">0</span></p>
+                    <p class="text-xs opacity-70">≈ NT$<span id="totalPersonalJPYtoTWD">0</span></p>
+                </div>
+                <div class="bg-teal-400/30 backdrop-blur rounded-xl p-3 text-center border border-teal-300/30">
+                    <p class="text-xs opacity-80">🇹🇼 台幣花費</p>
+                    <p class="text-xl font-bold text-teal-100">NT$<span id="totalPersonalTWD">0</span></p>
+                    <p class="text-xs opacity-70">≈ ¥<span id="totalPersonalTWDtoJPY">0</span></p>
+                </div>
+                <div class="bg-white/20 backdrop-blur rounded-xl p-3 text-center col-span-2">
+                    <p class="text-xs opacity-80">💰 總花費 (含手續費)</p>
+                    <p class="text-lg font-bold"><span class="text-indigo-200">¥<span id="totalPersonalAllJPY">0</span></span> <span class="text-sm opacity-70">≈</span> <span class="text-teal-200">NT$<span id="totalPersonalAllTWD">0</span></span></p>
+                </div>
+            </div>
+
+            <!-- 代購統計 -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                <div class="col-span-2 sm:col-span-1 bg-indigo-400/30 backdrop-blur rounded-xl p-3 text-center border border-indigo-300/30">
+                    <p class="text-xs opacity-80">代購總金額</p>
+                    <p class="text-lg sm:text-xl font-bold text-indigo-100">¥<span id="totalProxy">0</span></p>
+                    <p class="text-xs opacity-70">≈ NT$<span id="totalProxyTWD">0</span></p>
+                </div>
+                <div class="bg-white/20 backdrop-blur rounded-xl p-3 text-center">
+                    <p class="text-xs opacity-80">代購已收款</p>
+                    <p class="text-lg sm:text-xl font-bold text-emerald-300">NT$<span id="totalProxyPaid">0</span></p>
+                </div>
+                <div class="bg-white/20 backdrop-blur rounded-xl p-3 text-center">
+                    <p class="text-xs opacity-80">代購待收款</p>
+                    <p class="text-lg sm:text-xl font-bold text-amber-300">NT$<span id="totalProxyUnpaid">0</span></p>
+                </div>
+            </div>
+
+            <!-- 分類統計 -->
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-center text-xs">
+                <div class="bg-blue-400/30 rounded-lg p-2">
+                    <i class="fas fa-train"></i>
+                    <p>交通</p>
+                    <p class="font-bold">¥<span id="catTransport">0</span></p>
+                </div>
+                <div class="bg-teal-400/30 rounded-lg p-2">
+                    <i class="fas fa-bed"></i>
+                    <p>住宿</p>
+                    <p class="font-bold">¥<span id="catHotel">0</span></p>
+                </div>
+                <div class="bg-pink-400/30 rounded-lg p-2">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>購物</p>
+                    <p class="font-bold">¥<span id="catShopping">0</span></p>
+                </div>
+                <div class="bg-purple-400/30 rounded-lg p-2">
+                    <i class="fas fa-gamepad"></i>
+                    <p>動漫</p>
+                    <p class="font-bold">¥<span id="catAnime">0</span></p>
+                </div>
+                <div class="bg-orange-400/30 rounded-lg p-2">
+                    <i class="fas fa-utensils"></i>
+                    <p>飲食</p>
+                    <p class="font-bold">¥<span id="catFood">0</span></p>
+                </div>
+                <div class="bg-gray-400/30 rounded-lg p-2">
+                    <i class="fas fa-ellipsis-h"></i>
+                    <p>其他</p>
+                    <p class="font-bold">¥<span id="catOther">0</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主分頁標籤 -->
+        <section class="sticky top-2 z-30">
+            <div class="flex overflow-x-auto no-scrollbar py-2 gap-2 bg-slate-50/80 backdrop-blur-md rounded-xl p-1 shadow-sm">
+                <button onclick="showMainTab('personal')" id="btn-main-personal" class="tab-btn active shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm">
+                    <i class="fas fa-user mr-1"></i> 個人花費
+                </button>
+                <button onclick="showMainTab('proxy')" id="btn-main-proxy" class="tab-btn shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm">
+                    <i class="fas fa-users mr-1"></i> 代購記帳
+                </button>
+            </div>
+        </section>
+
+        <!-- 個人花費分頁 -->
+        <div id="main-tab-personal" class="main-tab-content active">
+            <!-- CSV 匯入功能 -->
+            <section class="bg-emerald-50 p-4 rounded-2xl shadow-sm border border-emerald-200 mb-4">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <h3 class="font-bold text-emerald-700"><i class="fas fa-file-csv mr-2"></i>從 CSV 匯入</h3>
+                        <p class="text-xs text-emerald-600 mt-1">選擇 expense.csv 檔案匯入花費記錄</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVFile(this)">
+                        <button onclick="document.getElementById('csvFileInput').click()" class="px-4 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600 transition text-sm">
+                            <i class="fas fa-upload mr-1"></i> 選擇 CSV 檔案
+                        </button>
+                        <button onclick="clearAllExpenses()" class="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition text-sm">
+                            <i class="fas fa-trash-alt mr-1"></i> 清除全部
+                        </button>
+                    </div>
+                </div>
+                <div id="csvImportPreview" class="mt-3 hidden">
+                    <p class="text-sm text-emerald-700 mb-2">即將匯入 <span id="csvImportCount">0</span> 筆記錄：</p>
+                    <div id="csvImportList" class="max-h-60 overflow-y-auto space-y-1 text-sm"></div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="confirmCSVImport()" class="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600 transition text-sm">
+                            <i class="fas fa-check mr-1"></i> 確認匯入
+                        </button>
+                        <button onclick="cancelCSVImport()" class="flex-1 py-2 bg-slate-400 text-white rounded-lg font-bold hover:bg-slate-500 transition text-sm">
+                            <i class="fas fa-times mr-1"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 新增花費表單 -->
+            <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-4">
+                <h3 class="font-bold text-slate-700 mb-3"><i class="fas fa-plus-circle mr-2 text-indigo-500"></i>新增花費</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">日期</label>
+                        <input type="date" id="expenseDate" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">分類</label>
+                        <select id="expenseCategory" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="transport">🚃 交通</option>
+                            <option value="hotel">🏨 住宿</option>
+                            <option value="shopping">🛍️ 購物</option>
+                            <option value="anime">🎮 動漫</option>
+                            <option value="food">🍜 飲食</option>
+                            <option value="other">📦 其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">付款方式</label>
+                        <select id="expensePayment" onchange="updatePaymentFields()" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="cash">現金</option>
+                            <option value="paypay_esun">PayPay (玉山)</option>
+                            <option value="paypay_taishin">PayPay (台新)</option>
+                            <option value="card_esun">玉山卡</option>
+                            <option value="card_taishin">台新卡</option>
+                        </select>
+                    </div>
+                    <div id="currencyField">
+                        <label class="text-xs text-slate-500">幣別</label>
+                        <select id="expenseCurrency" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="JPY">🇯🇵 日幣</option>
+                            <option value="TWD">🇹🇼 台幣</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">金額</label>
+                        <input type="number" id="expenseAmount" placeholder="金額" oninput="calculateFee()" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div id="feeField" class="hidden">
+                        <label class="text-xs text-slate-500">手續費 1.5%</label>
+                        <input type="number" id="expenseFee" readonly class="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-600">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-xs text-slate-500">商品名稱</label>
+                        <input type="text" id="expenseItem" placeholder="商品..." class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="text-xs text-slate-500">備註</label>
+                        <input type="text" id="expenseNote" placeholder="說明..." class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <button onclick="addExpense()" class="mt-3 w-full py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition">
+                    <i class="fas fa-plus mr-1"></i> 新增記錄
+                </button>
+            </section>
+
+            <!-- 花費列表 -->
+            <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="font-bold text-slate-700 mb-3"><i class="fas fa-list mr-2 text-indigo-500"></i>花費記錄</h3>
+                
+                <!-- 搜尋與篩選 -->
+                <div class="mb-4 space-y-3">
+                    <!-- 搜尋框 -->
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="expenseSearch" placeholder="搜尋商品名稱..." 
+                            oninput="filterExpenses()"
+                            class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    
+                    <!-- 篩選按鈕 -->
+                    <div class="flex flex-wrap gap-2">
+                        <!-- 分類篩選 -->
+                        <select id="filterCategory" onchange="filterExpenses()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">全部分類</option>
+                            <option value="transport">🚃 交通</option>
+                            <option value="hotel">🏨 住宿</option>
+                            <option value="shopping">🛍️ 購物</option>
+                            <option value="anime">🎮 動漫</option>
+                            <option value="food">🍜 飲食</option>
+                            <option value="other">📦 其他</option>
+                        </select>
+                        
+                        <!-- 付款方式篩選 -->
+                        <select id="filterPayment" onchange="filterExpenses()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">全部付款</option>
+                            <option value="cash">💴 現金</option>
+                            <option value="paypay_esun">📱 PayPay(玉山)</option>
+                            <option value="paypay_taishin">📱 PayPay(台新)</option>
+                            <option value="card_esun">💳 玉山卡</option>
+                            <option value="card_taishin">💳 台新卡</option>
+                        </select>
+                        
+                        <!-- 日期篩選 -->
+                        <select id="filterDate" onchange="filterExpenses()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">全部日期</option>
+                        </select>
+                        
+                        <!-- 清除篩選 -->
+                        <button onclick="clearFilters()" class="px-3 py-1.5 text-slate-500 hover:text-slate-700 text-sm">
+                            <i class="fas fa-times mr-1"></i>清除
+                        </button>
+                    </div>
+                    
+                    <!-- 篩選結果統計 -->
+                    <div id="filterStats" class="text-xs text-slate-500 hidden">
+                        <span id="filterCount">0</span> 筆記錄，共 <span id="filterTotalJPY">¥0</span> / <span id="filterTotalTWD">NT$0</span>
+                    </div>
+                </div>
+                
+                <!-- 花費列表內容 -->
+                <div id="expenseList" class="space-y-4 max-h-[600px] overflow-y-auto">
+                    <p class="text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 代購分頁 -->
+        <div id="main-tab-proxy" class="main-tab-content">
+            <!-- 從代購清單導入 -->
+            <section class="bg-amber-50 p-4 rounded-2xl shadow-sm border border-amber-200 mb-4">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <h3 class="font-bold text-amber-700"><i class="fas fa-file-import mr-2"></i>從代購清單導入</h3>
+                        <p class="text-xs text-amber-600 mt-1">將行程頁面中「已勾選」的代購品項導入記帳</p>
+                    </div>
+                    <button onclick="importFromShopping()" class="px-4 py-2 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition text-sm">
+                        <i class="fas fa-download mr-1"></i> 導入已購品項
+                    </button>
+                </div>
+                <div id="importPreview" class="mt-3 hidden">
+                    <p class="text-sm text-amber-700 mb-2">即將導入以下品項：</p>
+                    <div id="importList" class="max-h-40 overflow-y-auto space-y-1"></div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="confirmImport()" class="flex-1 py-2 bg-emerald-500 text-white rounded-lg font-bold hover:bg-emerald-600 transition text-sm">
+                            <i class="fas fa-check mr-1"></i> 確認導入
+                        </button>
+                        <button onclick="cancelImport()" class="flex-1 py-2 bg-slate-400 text-white rounded-lg font-bold hover:bg-slate-500 transition text-sm">
+                            <i class="fas fa-times mr-1"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 新增代購表單 -->
+            <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-4">
+                <h3 class="font-bold text-slate-700 mb-3"><i class="fas fa-plus-circle mr-2 text-yellow-500"></i>新增代購</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">委託人</label>
+                        <input type="text" id="proxyPerson" placeholder="姓名" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">商品名稱</label>
+                        <input type="text" id="proxyItem" placeholder="商品..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">數量</label>
+                        <input type="number" id="proxyQty" value="1" min="1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">單價 (日幣)</label>
+                        <input type="number" id="proxyPrice" placeholder="¥" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">收款金額 (台幣)</label>
+                        <input type="number" id="proxyCharge" placeholder="NT$" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="proxyPaid" class="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500">
+                            <span class="text-sm text-slate-600">已收款</span>
+                        </label>
+                    </div>
+                </div>
+                <button onclick="addProxy()" class="mt-3 w-full py-2 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 transition">
+                    <i class="fas fa-plus mr-1"></i> 新增代購
+                </button>
+            </section>
+
+            <!-- 代購列表 -->
+            <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="font-bold text-slate-700 mb-3"><i class="fas fa-list mr-2 text-yellow-500"></i>代購清單</h3>
+                <div id="proxyList" class="space-y-2 max-h-96 overflow-y-auto">
+                    <p class="text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-2"></i>載入中...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 編輯花費彈窗 -->
+    <div id="expenseModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4" onclick="if(event.target === this) closeExpenseModal()">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white">
+                <h3 class="font-bold text-lg text-slate-700"><i class="fas fa-pen mr-2 text-indigo-500"></i>編輯花費</h3>
+                <button onclick="closeExpenseModal()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-3">
+                <input type="hidden" id="modalExpenseKey">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">日期</label>
+                        <input type="date" id="modalExpenseDate" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">分類</label>
+                        <select id="modalExpenseCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="transport">🚃 交通</option>
+                            <option value="hotel">🏨 住宿</option>
+                            <option value="shopping">🛍️ 購物</option>
+                            <option value="anime">🎮 動漫</option>
+                            <option value="food">🍜 飲食</option>
+                            <option value="other">📦 其他</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">付款方式</label>
+                    <select id="modalExpensePayment" onchange="updateModalPaymentFields()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="cash">現金</option>
+                        <option value="paypay_esun">PayPay (玉山)</option>
+                        <option value="paypay_taishin">PayPay (台新)</option>
+                        <option value="card_esun">玉山卡</option>
+                        <option value="card_taishin">台新卡</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div id="modalCurrencyField">
+                        <label class="text-xs text-slate-500">幣別</label>
+                        <select id="modalExpenseCurrency" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="JPY">🇯🇵 日幣 JPY</option>
+                            <option value="TWD">🇹🇼 台幣 TWD</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">金額</label>
+                        <input type="number" id="modalExpenseAmount" placeholder="金額" oninput="calculateModalFee()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div id="modalFeeField" class="hidden">
+                    <label class="text-xs text-slate-500">手續費 1.5% <span id="modalFeeCurrencyLabel">(日幣)</span></label>
+                    <input type="number" id="modalExpenseFee" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-600">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">商品名稱</label>
+                    <input type="text" id="modalExpenseItem" placeholder="商品..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">備註</label>
+                    <input type="text" id="modalExpenseNote" placeholder="說明..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div class="flex gap-2 p-4 border-t border-slate-200">
+                <button onclick="saveExpenseModal()" class="flex-1 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition">
+                    <i class="fas fa-save mr-1"></i> 儲存
+                </button>
+                <button onclick="deleteExpenseModal()" class="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition">
+                    <i class="fas fa-trash-alt mr-1"></i> 刪除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯代購彈窗 -->
+    <div id="proxyModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4" onclick="if(event.target === this) closeProxyModal()">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                <h3 class="font-bold text-lg text-slate-700"><i class="fas fa-pen mr-2 text-yellow-500"></i>編輯代購</h3>
+                <button onclick="closeProxyModal()" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-3">
+                <input type="hidden" id="modalProxyKey">
+                <div>
+                    <label class="text-xs text-slate-500">委託人</label>
+                    <input type="text" id="modalProxyPerson" placeholder="姓名" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">商品名稱</label>
+                    <input type="text" id="modalProxyItem" placeholder="商品..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">數量</label>
+                        <input type="number" id="modalProxyQty" value="1" min="1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">單價 (日幣)</label>
+                        <input type="number" id="modalProxyPrice" placeholder="¥" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">收款金額 (台幣)</label>
+                        <input type="number" id="modalProxyCharge" placeholder="NT$" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div class="flex items-end pb-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="modalProxyPaid" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-500">
+                            <span class="text-sm text-slate-600">已收款</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 p-4 border-t border-slate-200">
+                <button onclick="saveProxyModal()" class="flex-1 py-2 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 transition">
+                    <i class="fas fa-save mr-1"></i> 儲存
+                </button>
+                <button onclick="deleteProxyModal()" class="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition">
+                    <i class="fas fa-trash-alt mr-1"></i> 刪除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase 初始化（使用與代購清單相同的資料庫）
+        firebase.initializeApp({
+            databaseURL: "https://jp-9c9f8-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        });
+        const db = firebase.database();
+        const expensesRef = db.ref('expenses_nagoya');
+        const proxyRef = db.ref('proxy_accounting_nagoya');
+        const settingsRef = db.ref('expense_settings_nagoya');
+
+        // 初始化日期
+        document.getElementById('expenseDate').valueAsDate = new Date();
+
+        // 同步狀態顯示
+        function setSyncStatus(status, text) {
+            const statusEl = document.getElementById('syncStatus');
+            const textEl = document.getElementById('syncText');
+            statusEl.className = 'sync-status text-sm ' + status;
+            textEl.textContent = text;
+        }
+
+        // 分頁切換
+        function showMainTab(tabName) {
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('main-tab-' + tabName).classList.add('active');
+            document.getElementById('btn-main-' + tabName).classList.add('active');
+        }
+
+        // 新增個人花費
+        function addExpense() {
+            const date = document.getElementById('expenseDate').value;
+            const category = document.getElementById('expenseCategory').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+            const currency = document.getElementById('expenseCurrency').value;
+            const fee = parseFloat(document.getElementById('expenseFee').value) || 0;
+            const item = document.getElementById('expenseItem').value;
+            const payment = document.getElementById('expensePayment').value;
+            const note = document.getElementById('expenseNote').value;
+
+            if (!date || amount <= 0) {
+                alert('請填寫日期和金額');
+                return;
+            }
+
+            setSyncStatus('syncing', '同步中...');
+            expensesRef.push({ date, category, amount, currency, fee, item, payment, note, createdAt: Date.now() })
+                .then(() => {
+                    document.getElementById('expenseAmount').value = '';
+                    document.getElementById('expenseFee').value = '';
+                    document.getElementById('expenseItem').value = '';
+                    document.getElementById('expenseNote').value = '';
+                })
+                .catch(err => {
+                    setSyncStatus('error', '同步失敗');
+                    alert('儲存失敗：' + err.message);
+                });
+        }
+
+        // 根據付款方式更新欄位
+        function updatePaymentFields() {
+            const payment = document.getElementById('expensePayment').value;
+            const feeField = document.getElementById('feeField');
+            const currencySelect = document.getElementById('expenseCurrency');
+            const feeLabel = document.getElementById('feeCurrencyLabel');
+            
+            // 所有幣別都自動鎖定
+            currencySelect.disabled = true;
+            
+            if (payment === 'cash') {
+                // 現金：日幣，無手續費
+                feeField.classList.add('hidden');
+                currencySelect.value = 'JPY';
+                document.getElementById('expenseFee').value = '';
+            } else if (payment === 'paypay_esun' || payment === 'paypay_taishin') {
+                // PayPay：台幣，無手續費
+                feeField.classList.add('hidden');
+                currencySelect.value = 'TWD';
+                document.getElementById('expenseFee').value = '';
+            } else if (payment === 'card_esun') {
+                // 玉山卡：日幣，手續費 1.5% 捨去
+                feeField.classList.remove('hidden');
+                currencySelect.value = 'JPY';
+                feeLabel.textContent = '(日幣，捨去)';
+                calculateFee();
+            } else if (payment === 'card_taishin') {
+                // 台新卡：台幣，手續費 1.5% 進位
+                feeField.classList.remove('hidden');
+                currencySelect.value = 'TWD';
+                feeLabel.textContent = '(台幣，進位)';
+                calculateFee();
+            }
+        }
+
+        function updateModalPaymentFields() {
+            const payment = document.getElementById('modalExpensePayment').value;
+            const feeField = document.getElementById('modalFeeField');
+            const currencySelect = document.getElementById('modalExpenseCurrency');
+            const feeLabel = document.getElementById('modalFeeCurrencyLabel');
+            
+            currencySelect.disabled = true;
+            
+            if (payment === 'cash') {
+                feeField.classList.add('hidden');
+                currencySelect.value = 'JPY';
+                document.getElementById('modalExpenseFee').value = '';
+            } else if (payment === 'paypay_esun' || payment === 'paypay_taishin') {
+                feeField.classList.add('hidden');
+                currencySelect.value = 'TWD';
+                document.getElementById('modalExpenseFee').value = '';
+            } else if (payment === 'card_esun') {
+                feeField.classList.remove('hidden');
+                currencySelect.value = 'JPY';
+                feeLabel.textContent = '(日幣，捨去)';
+                calculateModalFee();
+            } else if (payment === 'card_taishin') {
+                feeField.classList.remove('hidden');
+                currencySelect.value = 'TWD';
+                feeLabel.textContent = '(台幣，進位)';
+                calculateModalFee();
+            }
+        }
+
+        // 計算手續費
+        function calculateFee() {
+            const payment = document.getElementById('expensePayment').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+            const feeInput = document.getElementById('expenseFee');
+            
+            if (payment === 'card_esun') {
+                // 玉山卡：1.5% 無條件捨去
+                feeInput.value = Math.floor(amount * 0.015);
+            } else if (payment === 'card_taishin') {
+                // 台新卡：1.5% 無條件進位
+                feeInput.value = Math.ceil(amount * 0.015);
+            }
+        }
+
+        function calculateModalFee() {
+            const payment = document.getElementById('modalExpensePayment').value;
+            const amount = parseFloat(document.getElementById('modalExpenseAmount').value) || 0;
+            const feeInput = document.getElementById('modalExpenseFee');
+            
+            if (payment === 'card_esun') {
+                feeInput.value = Math.floor(amount * 0.015);
+            } else if (payment === 'card_taishin') {
+                feeInput.value = Math.ceil(amount * 0.015);
+            }
+        }
+
+        // 開啟編輯花費彈窗
+        function editExpense(key) {
+            expensesRef.child(key).once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                document.getElementById('modalExpenseKey').value = key;
+                document.getElementById('modalExpenseDate').value = data.date;
+                document.getElementById('modalExpenseCategory').value = data.category;
+                document.getElementById('modalExpenseAmount').value = data.amount;
+                document.getElementById('modalExpenseCurrency').value = data.currency || 'JPY';
+                document.getElementById('modalExpenseFee').value = data.fee || '';
+                document.getElementById('modalExpenseItem').value = data.item || '';
+                document.getElementById('modalExpensePayment').value = data.payment || 'cash';
+                document.getElementById('modalExpenseNote').value = data.note || '';
+                
+                updateModalPaymentFields();
+                // 重新載入手續費（如果是刷卡的話）
+                if (data.fee) {
+                    document.getElementById('modalExpenseFee').value = data.fee;
+                }
+                document.getElementById('expenseModal').classList.remove('hidden');
+                document.getElementById('expenseModal').classList.add('flex');
+            });
+        }
+
+        // 關閉花費彈窗
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.add('hidden');
+            document.getElementById('expenseModal').classList.remove('flex');
+        }
+
+        // 儲存花費（彈窗）
+        function saveExpenseModal() {
+            const key = document.getElementById('modalExpenseKey').value;
+            const date = document.getElementById('modalExpenseDate').value;
+            const category = document.getElementById('modalExpenseCategory').value;
+            const amount = parseFloat(document.getElementById('modalExpenseAmount').value) || 0;
+            const currency = document.getElementById('modalExpenseCurrency').value;
+            const fee = parseFloat(document.getElementById('modalExpenseFee').value) || 0;
+            const item = document.getElementById('modalExpenseItem').value;
+            const payment = document.getElementById('modalExpensePayment').value;
+            const note = document.getElementById('modalExpenseNote').value;
+
+            if (!date || amount <= 0) {
+                alert('請填寫日期和金額');
+                return;
+            }
+
+            setSyncStatus('syncing', '同步中...');
+            expensesRef.child(key).update({ date, category, amount, currency, fee, item, payment, note })
+                .then(() => { closeExpenseModal(); })
+                .catch(err => {
+                    setSyncStatus('error', '儲存失敗');
+                    alert('儲存失敗：' + err.message);
+                });
+        }
+
+        // 刪除花費（彈窗）
+        function deleteExpenseModal() {
+            const key = document.getElementById('modalExpenseKey').value;
+            if (!key) return;
+            
+            if (confirm('確定要刪除這筆花費記錄嗎？')) {
+                setSyncStatus('syncing', '同步中...');
+                expensesRef.child(key).remove()
+                    .then(() => { closeExpenseModal(); })
+                    .catch(err => {
+                        setSyncStatus('error', '刪除失敗');
+                        alert('刪除失敗：' + err.message);
+                    });
+            }
+        }
+
+        // 新增代購
+        function addProxy() {
+            const person = document.getElementById('proxyPerson').value;
+            const item = document.getElementById('proxyItem').value;
+            const qty = parseInt(document.getElementById('proxyQty').value) || 1;
+            const price = parseInt(document.getElementById('proxyPrice').value) || 0;
+            const charge = parseInt(document.getElementById('proxyCharge').value) || 0;
+            const paid = document.getElementById('proxyPaid').checked;
+
+            if (!person || !item || price <= 0) {
+                alert('請填寫委託人、商品和單價');
+                return;
+            }
+
+            setSyncStatus('syncing', '同步中...');
+            proxyRef.push({ person, item, qty, price, charge, paid, createdAt: Date.now() })
+                .then(() => {
+                    document.getElementById('proxyPerson').value = '';
+                    document.getElementById('proxyItem').value = '';
+                    document.getElementById('proxyQty').value = '1';
+                    document.getElementById('proxyPrice').value = '';
+                    document.getElementById('proxyCharge').value = '';
+                    document.getElementById('proxyPaid').checked = false;
+                })
+                .catch(err => {
+                    setSyncStatus('error', '同步失敗');
+                    alert('儲存失敗：' + err.message);
+                });
+        }
+
+        // 開啟編輯代購彈窗
+        function editProxy(key) {
+            proxyRef.child(key).once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                document.getElementById('modalProxyKey').value = key;
+                document.getElementById('modalProxyPerson').value = data.person || '';
+                document.getElementById('modalProxyItem').value = data.item || '';
+                document.getElementById('modalProxyQty').value = data.qty || 1;
+                document.getElementById('modalProxyPrice').value = data.price || '';
+                document.getElementById('modalProxyCharge').value = data.charge || '';
+                document.getElementById('modalProxyPaid').checked = data.paid || false;
+                
+                document.getElementById('proxyModal').classList.remove('hidden');
+                document.getElementById('proxyModal').classList.add('flex');
+            });
+        }
+
+        // 關閉代購彈窗
+        function closeProxyModal() {
+            document.getElementById('proxyModal').classList.add('hidden');
+            document.getElementById('proxyModal').classList.remove('flex');
+        }
+
+        // 儲存代購（彈窗）
+        function saveProxyModal() {
+            const key = document.getElementById('modalProxyKey').value;
+            const person = document.getElementById('modalProxyPerson').value;
+            const item = document.getElementById('modalProxyItem').value;
+            const qty = parseInt(document.getElementById('modalProxyQty').value) || 1;
+            const price = parseInt(document.getElementById('modalProxyPrice').value) || 0;
+            const charge = parseInt(document.getElementById('modalProxyCharge').value) || 0;
+            const paid = document.getElementById('modalProxyPaid').checked;
+
+            if (!person || !item || price <= 0) {
+                alert('請填寫委託人、商品和單價');
+                return;
+            }
+
+            setSyncStatus('syncing', '同步中...');
+            proxyRef.child(key).update({ person, item, qty, price, charge, paid })
+                .then(() => { closeProxyModal(); })
+                .catch(err => {
+                    setSyncStatus('error', '儲存失敗');
+                    alert('儲存失敗：' + err.message);
+                });
+        }
+
+        // 刪除代購（彈窗）
+        function deleteProxyModal() {
+            const key = document.getElementById('modalProxyKey').value;
+            if (!key) return;
+            
+            if (confirm('確定要刪除這筆代購記錄嗎？')) {
+                setSyncStatus('syncing', '同步中...');
+                proxyRef.child(key).remove()
+                    .then(() => { closeProxyModal(); })
+                    .catch(err => {
+                        setSyncStatus('error', '刪除失敗');
+                        alert('刪除失敗：' + err.message);
+                    });
+            }
+        }
+
+        // 切換代購收款狀態
+        function toggleProxyPaid(key, currentStatus) {
+            setSyncStatus('syncing', '同步中...');
+            proxyRef.child(key).update({ paid: !currentStatus })
+                .catch(err => {
+                    setSyncStatus('error', '更新失敗');
+                    alert('更新失敗：' + err.message);
+                });
+        }
+
+        // 取得分類資訊
+        function getCategoryInfo(cat) {
+            const info = {
+                transport: { icon: '🚃', name: '交通', class: 'category-transport' },
+                ticket: { icon: '🚃', name: '交通', class: 'category-transport' }, // 舊資料相容，歸到交通
+                hotel: { icon: '🏨', name: '住宿', class: 'category-hotel' },
+                shopping: { icon: '🛍️', name: '購物', class: 'category-shopping' },
+                anime: { icon: '🎮', name: '動漫', class: 'category-anime' },
+                play: { icon: '🎮', name: '動漫', class: 'category-anime' }, // 舊資料「其他玩樂」歸到動漫
+                food: { icon: '🍜', name: '飲食', class: 'category-food' },
+                other: { icon: '📦', name: '其他', class: 'category-other' }
+            };
+            return info[cat] || info.other;
+        }
+
+        // 取得付款方式資訊
+        function getPaymentInfo(payment) {
+            const info = {
+                paypay_esun: { icon: '📱', name: 'PayPay(玉山)', class: 'text-blue-600' },
+                paypay_taishin: { icon: '📱', name: 'PayPay(台新)', class: 'text-purple-600' },
+                card_esun: { icon: '💳', name: '玉山卡', class: 'text-blue-600' },
+                card_taishin: { icon: '💳', name: '台新卡', class: 'text-purple-600' },
+                cash: { icon: '💴', name: '現金', class: 'text-emerald-600' }
+            };
+            return info[payment] || info.cash;
+        }
+
+        // 渲染花費列表
+        function renderExpenses(data) {
+            const list = document.getElementById('expenseList');
+            if (!data || Object.keys(data).length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-400 py-8">尚無花費記錄</p>';
+                updateDateFilter([]);
+                return;
+            }
+
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 0.20;
+            
+            // 排序並轉換資料
+            const entries = Object.entries(data).sort((a, b) => {
+                const dateCompare = new Date(b[1].date) - new Date(a[1].date);
+                if (dateCompare !== 0) return dateCompare;
+                return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+            });
+
+            // 更新日期篩選選項
+            const dates = [...new Set(entries.map(([_, e]) => e.date))].sort().reverse();
+            updateDateFilter(dates);
+
+            // 取得篩選條件
+            const searchText = document.getElementById('expenseSearch').value.toLowerCase();
+            const filterCat = document.getElementById('filterCategory').value;
+            const filterPay = document.getElementById('filterPayment').value;
+            const filterDate = document.getElementById('filterDate').value;
+
+            // 篩選資料
+            const filteredEntries = entries.filter(([_, e]) => {
+                // 搜尋文字
+                const itemText = (e.item || '') + (e.note || '');
+                if (searchText && !itemText.toLowerCase().includes(searchText)) return false;
+                
+                // 分類篩選（處理舊資料對應）
+                let mappedCat = e.category;
+                if (mappedCat === 'ticket') mappedCat = 'transport';
+                if (mappedCat === 'play') mappedCat = 'anime';
+                if (filterCat && mappedCat !== filterCat) return false;
+                
+                // 付款方式篩選
+                if (filterPay && e.payment !== filterPay) return false;
+                
+                // 日期篩選
+                if (filterDate && e.date !== filterDate) return false;
+                
+                return true;
+            });
+
+            // 顯示篩選統計
+            updateFilterStats(filteredEntries, rate);
+
+            if (filteredEntries.length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-400 py-8">沒有符合條件的記錄</p>';
+                return;
+            }
+
+            // 按日期分組
+            const grouped = {};
+            filteredEntries.forEach(([key, e]) => {
+                if (!grouped[e.date]) grouped[e.date] = [];
+                grouped[e.date].push({ key, ...e });
+            });
+
+            // 渲染分組列表
+            let html = '';
+            for (const date in grouped) {
+                const items = grouped[date];
+                
+                // 計算每日小計
+                let dayTotalJPY = 0, dayTotalTWD = 0;
+                items.forEach(e => {
+                    const currency = e.currency || 'JPY';
+                    const fee = e.fee || 0;
+                    if (currency === 'TWD') {
+                        dayTotalTWD += e.amount + fee;
+                    } else {
+                        dayTotalJPY += e.amount + fee;
+                    }
+                });
+
+                // 日期標題
+                const dateObj = new Date(date);
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                const weekday = weekdays[dateObj.getDay()];
+                const dateDisplay = `${dateObj.getMonth() + 1}/${dateObj.getDate()} (${weekday})`;
+                
+                html += `
+                    <div class="mb-6 pb-4 border-b-2 border-slate-200 last:border-b-0 last:mb-0 last:pb-0">
+                        <div class="sticky top-0 bg-indigo-100 px-4 py-3 rounded-xl flex items-center justify-between z-10 shadow-sm mb-3">
+                            <span class="font-bold text-indigo-800 text-base">
+                                <i class="fas fa-calendar-day mr-2"></i>${dateDisplay}
+                            </span>
+                            <div class="text-right">
+                                <span class="font-bold">
+                                    ${dayTotalJPY > 0 ? `<span class="text-indigo-700">¥${dayTotalJPY.toLocaleString()}</span>` : ''}
+                                    ${dayTotalJPY > 0 && dayTotalTWD > 0 ? '<span class="text-slate-400 mx-1">+</span>' : ''}
+                                    ${dayTotalTWD > 0 ? `<span class="text-teal-700">NT$${dayTotalTWD.toLocaleString()}</span>` : ''}
+                                </span>
+                                <span class="text-xs text-indigo-500 ml-2">${items.length}筆</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">`;
+
+                items.forEach(e => {
+                    const cat = getCategoryInfo(e.category);
+                    const pay = getPaymentInfo(e.payment);
+                    const currency = e.currency || 'JPY';
+                    const fee = e.fee || 0;
+                    
+                    // 計算換算金額
+                    let twdAmount, jpyAmount;
+                    if (currency === 'TWD') {
+                        twdAmount = e.amount + fee;
+                        jpyAmount = Math.round(e.amount / rate);
+                    } else {
+                        jpyAmount = e.amount + fee;
+                        twdAmount = Math.round((e.amount + fee) * rate);
+                    }
+                    
+                    const itemText = e.item ? e.item : (e.note || cat.name);
+                    const noteText = e.item && e.note ? e.note : '';
+                    const currencySymbol = currency === 'TWD' ? 'NT$' : '¥';
+                    const feeText = fee > 0 ? ` <span class="text-red-400">(+${fee})</span>` : '';
+                    
+                    const amountColor = currency === 'JPY' ? 'text-indigo-600' : 'text-teal-600';
+                    
+                    html += `
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-slate-50 rounded-xl border-l-4 ${cat.class} hover:bg-slate-100 transition cursor-pointer group" onclick="editExpense('${e.key}')">
+                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <span class="text-2xl w-8 text-center shrink-0">${cat.icon}</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-slate-700">${itemText}</p>
+                                    <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                                        ${noteText ? `<span>${noteText}</span><span>·</span>` : ''}
+                                        <span class="${pay.class}">${pay.icon} ${pay.name}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-end gap-2 pl-10 sm:pl-0">
+                                <div class="shrink-0 text-right">
+                                    <p class="font-bold ${amountColor} tabular-nums">${currencySymbol}${e.amount.toLocaleString()}</p>
+                                    <p class="text-xs text-slate-400 tabular-nums">${currency === 'TWD' ? '≈ ¥' + jpyAmount.toLocaleString() : '≈ NT$' + twdAmount.toLocaleString()}</p>
+                                </div>
+                                <div class="shrink-0 w-[50px] text-right">
+                                    <p class="text-sm text-red-500 tabular-nums font-medium">${fee > 0 ? '(+' + fee + ')' : ''}</p>
+                                </div>
+                                <div class="text-blue-400 sm:opacity-0 group-hover:opacity-100 transition w-6 text-center shrink-0">
+                                    <i class="fas fa-pen text-sm"></i>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            list.innerHTML = html;
+        }
+
+        // 更新日期篩選選項
+        function updateDateFilter(dates) {
+            const select = document.getElementById('filterDate');
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">全部日期</option>';
+            dates.forEach(date => {
+                const dateObj = new Date(date);
+                const display = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                select.innerHTML += `<option value="${date}">${display}</option>`;
+            });
+            
+            // 恢復選中值
+            if (currentValue && dates.includes(currentValue)) {
+                select.value = currentValue;
+            }
+        }
+
+        // 更新篩選統計
+        function updateFilterStats(filteredEntries, rate) {
+            const statsEl = document.getElementById('filterStats');
+            const countEl = document.getElementById('filterCount');
+            const jpyEl = document.getElementById('filterTotalJPY');
+            const twdEl = document.getElementById('filterTotalTWD');
+
+            if (filteredEntries.length === 0) {
+                statsEl.classList.add('hidden');
+                return;
+            }
+
+            let totalJPY = 0, totalTWD = 0;
+            filteredEntries.forEach(([_, e]) => {
+                const currency = e.currency || 'JPY';
+                const fee = e.fee || 0;
+                if (currency === 'TWD') {
+                    totalTWD += e.amount + fee;
+                } else {
+                    totalJPY += e.amount + fee;
+                }
+            });
+
+            // 換算總額
+            const allTWD = Math.round(totalJPY * rate) + totalTWD;
+
+            countEl.textContent = filteredEntries.length;
+            jpyEl.textContent = `¥${totalJPY.toLocaleString()}`;
+            twdEl.textContent = `NT$${allTWD.toLocaleString()}`;
+            
+            // 只在有篩選條件時顯示
+            const hasFilter = document.getElementById('expenseSearch').value ||
+                              document.getElementById('filterCategory').value ||
+                              document.getElementById('filterPayment').value ||
+                              document.getElementById('filterDate').value;
+            
+            if (hasFilter) {
+                statsEl.classList.remove('hidden');
+            } else {
+                statsEl.classList.add('hidden');
+            }
+        }
+
+        // 篩選花費記錄
+        function filterExpenses() {
+            renderExpenses(currentExpensesData);
+        }
+
+        // 清除篩選
+        function clearFilters() {
+            document.getElementById('expenseSearch').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterPayment').value = '';
+            document.getElementById('filterDate').value = '';
+            filterExpenses();
+        }
+
+        // 渲染代購列表
+        function renderProxy(data) {
+            const list = document.getElementById('proxyList');
+            if (!data || Object.keys(data).length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-400 py-8">尚無代購記錄</p>';
+                return;
+            }
+
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 0.20;
+            const grouped = {};
+            
+            Object.entries(data).forEach(([key, p]) => {
+                if (!grouped[p.person]) grouped[p.person] = [];
+                grouped[p.person].push({ key, ...p });
+            });
+
+            let html = '';
+            for (const person in grouped) {
+                const items = grouped[person];
+                const totalJPY = items.reduce((sum, p) => sum + p.price * p.qty, 0);
+                const totalCharge = items.reduce((sum, p) => sum + (p.charge || Math.round(p.price * p.qty * rate)), 0);
+                const allPaid = items.every(p => p.paid);
+                
+                html += `<div class="mb-4 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-slate-700"><i class="fas fa-user mr-1"></i>${person}</span>
+                        <span class="text-base font-bold ${allPaid ? 'text-emerald-600' : 'text-amber-600'}">
+                            ${allPaid ? '<i class="fas fa-check-circle mr-1"></i>已收款' : '<i class="fas fa-clock mr-1"></i>待收款'}
+                            NT$${totalCharge.toLocaleString()}
+                        </span>
+                    </div>
+                    <div class="space-y-1">`;
+                
+                items.forEach(p => {
+                    const itemTotal = p.price * p.qty;
+                    const chargeAmount = p.charge || Math.round(itemTotal * rate);
+                    html += `
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-white rounded-xl cursor-pointer hover:bg-slate-50 transition" onclick="toggleProxyPaid('${p.key}', ${p.paid})">
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                <div class="w-6 h-6 rounded border-2 ${p.paid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'} flex items-center justify-center shrink-0">
+                                    ${p.paid ? '<i class="fas fa-check text-sm"></i>' : ''}
+                                </div>
+                                <span class="flex-1 font-medium ${p.paid ? 'line-through text-slate-400' : 'text-slate-700'}">${p.item} x${p.qty}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-3 pl-9 sm:pl-0">
+                                <div class="text-right shrink-0">
+                                    <p class="text-indigo-600 font-bold">¥${itemTotal.toLocaleString()}</p>
+                                    <p class="text-teal-600 font-bold">NT$${chargeAmount.toLocaleString()}</p>
+                                </div>
+                                <button onclick="event.stopPropagation(); editProxy('${p.key}')" class="p-2 text-blue-400 hover:text-blue-600 shrink-0">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>`;
+                });
+                
+                html += `</div></div>`;
+            }
+            list.innerHTML = html;
+        }
+
+        // 更新統計
+        function updateStats(expensesData, proxyData) {
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 0.2;
+            
+            // 個人花費統計
+            let totalPersonalJPY = 0;  // 日幣原始金額（含手續費）
+            let totalPersonalTWD = 0;  // 台幣原始金額（含手續費）
+            const categories = { transport: 0, hotel: 0, shopping: 0, anime: 0, food: 0, other: 0 };
+            
+            if (expensesData) {
+                Object.values(expensesData).forEach(e => {
+                    const currency = e.currency || 'JPY';
+                    const fee = e.fee || 0;
+                    
+                    if (currency === 'TWD') {
+                        totalPersonalTWD += e.amount + fee; // 台幣金額 + 台幣手續費
+                        // 換算成日幣來統計分類（不含手續費）
+                        const jpyEquiv = Math.round(e.amount / rate);
+                        // 舊資料分類轉換：ticket -> transport, play -> anime
+                        let mappedCategory = e.category;
+                        if (mappedCategory === 'ticket') mappedCategory = 'transport';
+                        if (mappedCategory === 'play') mappedCategory = 'anime';
+                        categories[mappedCategory] = (categories[mappedCategory] || 0) + jpyEquiv;
+                    } else {
+                        totalPersonalJPY += e.amount + fee; // 日幣金額 + 日幣手續費
+                        // 舊資料分類轉換：ticket -> transport, play -> anime
+                        let mappedCategory = e.category;
+                        if (mappedCategory === 'ticket') mappedCategory = 'transport';
+                        if (mappedCategory === 'play') mappedCategory = 'anime';
+                        categories[mappedCategory] = (categories[mappedCategory] || 0) + e.amount;
+                    }
+                });
+            }
+            
+            // 換算值
+            const jpyToTWD = Math.round(totalPersonalJPY * rate);  // 日幣換算台幣
+            const twdToJPY = Math.round(totalPersonalTWD / rate);  // 台幣換算日幣
+            
+            // 總花費
+            const totalAllJPY = totalPersonalJPY + twdToJPY;  // 全部換算成日幣
+            const totalAllTWD = jpyToTWD + totalPersonalTWD;  // 全部換算成台幣
+            
+            // 更新顯示 - 日幣花費
+            document.getElementById('totalPersonalJPY').textContent = totalPersonalJPY.toLocaleString();
+            document.getElementById('totalPersonalJPYtoTWD').textContent = jpyToTWD.toLocaleString();
+            
+            // 更新顯示 - 台幣花費
+            document.getElementById('totalPersonalTWD').textContent = totalPersonalTWD.toLocaleString();
+            document.getElementById('totalPersonalTWDtoJPY').textContent = twdToJPY.toLocaleString();
+            
+            // 更新顯示 - 總花費
+            document.getElementById('totalPersonalAllJPY').textContent = totalAllJPY.toLocaleString();
+            document.getElementById('totalPersonalAllTWD').textContent = totalAllTWD.toLocaleString();
+            
+            // 分類統計
+            document.getElementById('catTransport').textContent = categories.transport.toLocaleString();
+            document.getElementById('catHotel').textContent = categories.hotel.toLocaleString();
+            document.getElementById('catShopping').textContent = categories.shopping.toLocaleString();
+            document.getElementById('catAnime').textContent = categories.anime.toLocaleString();
+            document.getElementById('catFood').textContent = categories.food.toLocaleString();
+            document.getElementById('catOther').textContent = categories.other.toLocaleString();
+
+            // 代購統計
+            let totalProxy = 0, totalPaid = 0, totalUnpaid = 0;
+            
+            if (proxyData) {
+                Object.values(proxyData).forEach(p => {
+                    const itemTotal = p.price * p.qty;
+                    totalProxy += itemTotal;
+                    const chargeAmount = p.charge || Math.round(itemTotal * rate);
+                    if (p.paid) totalPaid += chargeAmount;
+                    else totalUnpaid += chargeAmount;
+                });
+            }
+            
+            document.getElementById('totalProxy').textContent = totalProxy.toLocaleString();
+            document.getElementById('totalProxyTWD').textContent = Math.round(totalProxy * rate).toLocaleString();
+            document.getElementById('totalProxyPaid').textContent = totalPaid.toLocaleString();
+            document.getElementById('totalProxyUnpaid').textContent = totalUnpaid.toLocaleString();
+        }
+
+        // 儲存當前資料供匯率變更時使用
+        let currentExpensesData = null;
+        let currentProxyData = null;
+
+        // 匯率變更時更新顯示
+        document.getElementById('exchangeRate').addEventListener('change', function() {
+            // 儲存匯率到 Firebase
+            settingsRef.set({ exchangeRate: this.value });
+            // 重新渲染
+            renderExpenses(currentExpensesData);
+            renderProxy(currentProxyData);
+            updateStats(currentExpensesData, currentProxyData);
+        });
+
+        // 即時監聽 Firebase 資料變化
+        expensesRef.on('value', (snapshot) => {
+            currentExpensesData = snapshot.val();
+            setSyncStatus('synced', '已同步');
+            renderExpenses(currentExpensesData);
+            updateStats(currentExpensesData, currentProxyData);
+        });
+
+        proxyRef.on('value', (snapshot) => {
+            currentProxyData = snapshot.val();
+            setSyncStatus('synced', '已同步');
+            renderProxy(currentProxyData);
+            updateStats(currentExpensesData, currentProxyData);
+        });
+
+        // 讀取匯率設定
+        settingsRef.on('value', (snapshot) => {
+            const settings = snapshot.val();
+            if (settings && settings.exchangeRate) {
+                document.getElementById('exchangeRate').value = settings.exchangeRate;
+            }
+        });
+
+        // ========== 從代購清單導入功能 ==========
+        const shoppingRef = db.ref('shopping_items_nagoya');
+        let pendingImports = [];  // 新品項
+        let pendingUpdates = [];  // 有變更的品項
+
+        // 讀取已購買的代購品項
+        function importFromShopping() {
+            shoppingRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const checkedItems = [];
+                
+                Object.entries(data).forEach(([key, item]) => {
+                    if (item.checked) {
+                        checkedItems.push({ key, ...item });
+                    }
+                });
+
+                if (checkedItems.length === 0) {
+                    alert('沒有已勾選的代購品項可導入！\n請先到行程頁面的代購清單勾選已購買的品項。');
+                    return;
+                }
+
+                // 比對現有記帳資料
+                proxyRef.once('value', (proxySnapshot) => {
+                    const existingProxy = proxySnapshot.val() || {};
+                    
+                    // 建立 sourceKey -> proxyKey 的對照表
+                    const sourceKeyMap = {};
+                    Object.entries(existingProxy).forEach(([proxyKey, p]) => {
+                        if (p.sourceKey) {
+                            sourceKeyMap[p.sourceKey] = { proxyKey, data: p };
+                        }
+                    });
+
+                    pendingImports = [];
+                    pendingUpdates = [];
+
+                    checkedItems.forEach(item => {
+                        if (sourceKeyMap[item.key]) {
+                            // 已導入過，檢查是否有變更
+                            const existing = sourceKeyMap[item.key];
+                            const hasChanges = 
+                                existing.data.person !== item.person ||
+                                existing.data.item !== item.item ||
+                                String(existing.data.qty) !== String(item.qty) ||
+                                (existing.data.category || '') !== (item.category || '') ||
+                                (existing.data.note || '') !== (item.note || '');
+                            
+                            if (hasChanges) {
+                                pendingUpdates.push({
+                                    proxyKey: existing.proxyKey,
+                                    sourceKey: item.key,
+                                    old: existing.data,
+                                    new: item
+                                });
+                            }
+                        } else {
+                            // 新品項
+                            pendingImports.push(item);
+                        }
+                    });
+
+                    if (pendingImports.length === 0 && pendingUpdates.length === 0) {
+                        alert('所有品項都已是最新狀態！');
+                        return;
+                    }
+
+                    // 顯示預覽
+                    showImportPreview();
+                });
+            });
+        }
+
+        // 顯示導入預覽
+        function showImportPreview() {
+            const previewEl = document.getElementById('importPreview');
+            const listEl = document.getElementById('importList');
+            
+            let html = '';
+            
+            // 新品項
+            if (pendingImports.length > 0) {
+                html += `<p class="text-xs font-bold text-emerald-600 mb-1"><i class="fas fa-plus-circle mr-1"></i>新增 ${pendingImports.length} 筆</p>`;
+                html += pendingImports.map(item => `
+                    <div class="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg text-sm border border-emerald-200">
+                        <input type="checkbox" class="import-check w-4 h-4" data-type="new" data-key="${item.key}" checked>
+                        <span class="font-bold text-slate-700">${item.person}</span>
+                        <span class="text-slate-400">-</span>
+                        <span class="flex-1">${item.item} x${item.qty}</span>
+                        <span class="text-xs text-emerald-600">${item.category || ''}</span>
+                    </div>
+                `).join('');
+            }
+            
+            // 有變更的品項
+            if (pendingUpdates.length > 0) {
+                html += `<p class="text-xs font-bold text-blue-600 mb-1 mt-3"><i class="fas fa-sync-alt mr-1"></i>更新 ${pendingUpdates.length} 筆</p>`;
+                html += pendingUpdates.map(u => `
+                    <div class="p-2 bg-blue-50 rounded-lg text-sm border border-blue-200 mb-1">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" class="import-check w-4 h-4" data-type="update" data-key="${u.proxyKey}" checked>
+                            <span class="font-bold text-slate-700">${u.new.person}</span>
+                            <span class="text-slate-400">-</span>
+                            <span class="flex-1">${u.new.item}</span>
+                        </div>
+                        <div class="ml-6 mt-1 text-xs text-slate-500">
+                            ${u.old.person !== u.new.person ? `<span class="text-red-500 line-through">${u.old.person}</span> → <span class="text-emerald-600">${u.new.person}</span><br>` : ''}
+                            ${u.old.item !== u.new.item ? `<span class="text-red-500 line-through">${u.old.item}</span> → <span class="text-emerald-600">${u.new.item}</span><br>` : ''}
+                            ${String(u.old.qty) !== String(u.new.qty) ? `數量: <span class="text-red-500 line-through">${u.old.qty}</span> → <span class="text-emerald-600">${u.new.qty}</span><br>` : ''}
+                            ${(u.old.category || '') !== (u.new.category || '') ? `分類: <span class="text-red-500 line-through">${u.old.category || '無'}</span> → <span class="text-emerald-600">${u.new.category || '無'}</span><br>` : ''}
+                            ${(u.old.note || '') !== (u.new.note || '') ? `備註: <span class="text-red-500 line-through">${u.old.note || '無'}</span> → <span class="text-emerald-600">${u.new.note || '無'}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            listEl.innerHTML = html;
+            previewEl.classList.remove('hidden');
+        }
+
+        // 確認導入
+        function confirmImport() {
+            const checkboxes = document.querySelectorAll('.import-check:checked');
+            if (checkboxes.length === 0) {
+                alert('請至少選擇一個品項');
+                return;
+            }
+
+            setSyncStatus('syncing', '導入中...');
+            const promises = [];
+            
+            checkboxes.forEach(cb => {
+                const type = cb.dataset.type;
+                const key = cb.dataset.key;
+                
+                if (type === 'new') {
+                    const item = pendingImports.find(i => i.key === key);
+                    if (item) {
+                        promises.push(proxyRef.push({
+                            person: item.person,
+                            item: item.item,
+                            qty: parseInt(item.qty) || 1,
+                            price: 0,
+                            charge: 0,
+                            paid: false,
+                            sourceKey: item.key,
+                            category: item.category || '',
+                            note: item.note || '',
+                            createdAt: Date.now()
+                        }));
+                    }
+                } else if (type === 'update') {
+                    const update = pendingUpdates.find(u => u.proxyKey === key);
+                    if (update) {
+                        // 只更新基本資訊，保留價格和收款狀態
+                        promises.push(proxyRef.child(key).update({
+                            person: update.new.person,
+                            item: update.new.item,
+                            qty: parseInt(update.new.qty) || 1,
+                            category: update.new.category || '',
+                            note: update.new.note || ''
+                        }));
+                    }
+                }
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    const newCount = [...checkboxes].filter(cb => cb.dataset.type === 'new').length;
+                    const updateCount = [...checkboxes].filter(cb => cb.dataset.type === 'update').length;
+                    let msg = '完成！';
+                    if (newCount > 0) msg += `\n新增 ${newCount} 筆`;
+                    if (updateCount > 0) msg += `\n更新 ${updateCount} 筆`;
+                    if (newCount > 0) msg += '\n\n請記得填寫新品項的價格。';
+                    alert(msg);
+                    cancelImport();
+                })
+                .catch(err => {
+                    setSyncStatus('error', '導入失敗');
+                    alert('導入失敗：' + err.message);
+                });
+        }
+
+        // 取消導入
+        function cancelImport() {
+            pendingImports = [];
+            pendingUpdates = [];
+            document.getElementById('importPreview').classList.add('hidden');
+            document.getElementById('importList').innerHTML = '';
+        }
+
+        // ========== CSV 匯入功能 ==========
+        let pendingCSVData = [];
+
+        // 處理 CSV 檔案
+        function handleCSVFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // 解析 CSV
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) {
+                alert('CSV 檔案格式不正確');
+                return;
+            }
+
+            // 跳過標題行
+            const dataLines = lines.slice(1);
+            pendingCSVData = [];
+
+            dataLines.forEach((line, index) => {
+                // 處理逗號在引號內的情況
+                const cols = parseCSVLine(line);
+                if (cols.length < 9) return;
+
+                const [date, item, note, jpyStr, jpyFeeStr, twdStr, twdFeeStr, payment, category] = cols;
+                
+                // 跳過空行或總計行
+                if (!date || date === '總計' || !item) return;
+
+                // 解析金額（移除逗號）
+                const jpy = parseFloat((jpyStr || '').replace(/,/g, '')) || 0;
+                const jpyFee = parseFloat((jpyFeeStr || '').replace(/,/g, '')) || 0;
+                const twd = parseFloat((twdStr || '').replace(/,/g, '')) || 0;
+                const twdFee = parseFloat((twdFeeStr || '').replace(/,/g, '')) || 0;
+
+                // 判斷幣別和付款方式
+                let currency, amount, fee, paymentType;
+                
+                if (jpy > 0) {
+                    // 日幣付款（玉山卡）
+                    currency = 'JPY';
+                    amount = jpy;
+                    fee = jpyFee;
+                    paymentType = 'card_esun';
+                } else if (twd > 0) {
+                    // 台幣付款
+                    currency = 'TWD';
+                    amount = twd;
+                    fee = twdFee;
+                    
+                    if (payment && payment.includes('PAYPAY')) {
+                        paymentType = 'paypay_esun';
+                        fee = 0; // PayPay 無手續費
+                    } else {
+                        paymentType = 'card_taishin';
+                    }
+                } else {
+                    return; // 跳過無金額的行
+                }
+
+                // 分類對應 - 根據商品名稱和備註智慧判斷
+                let mappedCategory = 'other';
+                
+                // 基本分類對應
+                const categoryMap = {
+                    '衣服': 'shopping',
+                    '動漫': 'anime',
+                    '藥妝': 'shopping'
+                };
+                
+                if (categoryMap[category]) {
+                    mappedCategory = categoryMap[category];
+                } else if (category === '食品') {
+                    // 食品需要細分：伴手禮/零食帶回去 vs 當地吃的
+                    const isGift = note && (note.includes('伴手禮') || note.includes('抹茶粉'));
+                    const isAirportShopping = item && item.includes('機場免稅店');
+                    const isTakeHomeSnack = item && item.includes('DONKI') && note && note.includes('零食');
+                    
+                    if (isGift || isAirportShopping || isTakeHomeSnack) {
+                        mappedCategory = 'shopping'; // 帶回去的 -> 購物
+                    } else {
+                        mappedCategory = 'food'; // 當地吃的 -> 飲食（包含超市）
+                    }
+                } else if (category === '其他') {
+                    // 其他需要細分：門票/交通 vs 真正的其他
+                    const isTicket = note && note.includes('門票');
+                    const isTransport = note && note.includes('機場巴士');
+                    const isTransportItem = item && (item.includes('車票') || item.includes('平等院') || item.includes('二條城'));
+                    
+                    if (isTicket || isTransport || isTransportItem) {
+                        mappedCategory = 'transport'; // 門票/交通
+                    } else {
+                        mappedCategory = 'other';
+                    }
+                }
+
+                // 組合商品名稱
+                const itemName = note ? `${item} - ${note}` : item;
+
+                pendingCSVData.push({
+                    date: `2026-07-${date.padStart(2, '0')}`,
+                    category: mappedCategory,
+                    amount: amount,
+                    currency: currency,
+                    fee: fee,
+                    item: itemName,
+                    payment: paymentType,
+                    note: ''
+                });
+            });
+
+            if (pendingCSVData.length === 0) {
+                alert('沒有可匯入的資料');
+                return;
+            }
+
+            // 顯示預覽
+            showCSVPreview();
+        }
+
+        // 解析單行 CSV（處理引號內的逗號）
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        // 顯示 CSV 預覽
+        function showCSVPreview() {
+            const previewEl = document.getElementById('csvImportPreview');
+            const listEl = document.getElementById('csvImportList');
+            const countEl = document.getElementById('csvImportCount');
+
+            countEl.textContent = pendingCSVData.length;
+
+            const getCatIcon = (cat) => {
+                const icons = { transport: '🚃', hotel: '🏨', shopping: '🛍️', anime: '🎮', food: '🍜', other: '📦' };
+                return icons[cat] || '📦';
+            };
+
+            const getPayIcon = (pay) => {
+                if (pay.includes('paypay')) return '📱';
+                if (pay.includes('card')) return '💳';
+                return '💴';
+            };
+
+            listEl.innerHTML = pendingCSVData.map((d, i) => {
+                const currencySymbol = d.currency === 'TWD' ? 'NT$' : '¥';
+                const feeText = d.fee > 0 ? ` (+${d.fee})` : '';
+                return `
+                    <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-emerald-100">
+                        <span>${getCatIcon(d.category)}</span>
+                        <span class="text-xs text-slate-500">${d.date.slice(5)}</span>
+                        <span class="flex-1 truncate">${d.item}</span>
+                        <span class="text-xs">${getPayIcon(d.payment)}</span>
+                        <span class="font-bold text-emerald-600">${currencySymbol}${d.amount.toLocaleString()}${feeText}</span>
+                    </div>
+                `;
+            }).join('');
+
+            previewEl.classList.remove('hidden');
+        }
+
+        // 確認 CSV 匯入
+        function confirmCSVImport() {
+            if (pendingCSVData.length === 0) return;
+
+            setSyncStatus('syncing', '匯入中...');
+            
+            const promises = pendingCSVData.map(data => {
+                return expensesRef.push({
+                    ...data,
+                    createdAt: Date.now()
+                });
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    alert(`成功匯入 ${pendingCSVData.length} 筆記錄！`);
+                    cancelCSVImport();
+                })
+                .catch(err => {
+                    setSyncStatus('error', '匯入失敗');
+                    alert('匯入失敗：' + err.message);
+                });
+        }
+
+        // 取消 CSV 匯入
+        function cancelCSVImport() {
+            pendingCSVData = [];
+            document.getElementById('csvImportPreview').classList.add('hidden');
+            document.getElementById('csvImportList').innerHTML = '';
+            document.getElementById('csvFileInput').value = '';
+        }
+
+        // 清除所有花費記錄
+        function clearAllExpenses() {
+            const count = currentExpensesData ? Object.keys(currentExpensesData).length : 0;
+            if (count === 0) {
+                alert('目前沒有花費記錄');
+                return;
+            }
+            
+            if (confirm(`確定要刪除全部 ${count} 筆花費記錄嗎？\n\n此操作無法復原！`)) {
+                setSyncStatus('syncing', '刪除中...');
+                expensesRef.remove()
+                    .then(() => {
+                        alert('已清除所有花費記錄');
+                    })
+                    .catch(err => {
+                        setSyncStatus('error', '刪除失敗');
+                        alert('刪除失敗：' + err.message);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

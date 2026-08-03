@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 名古屋之旅 5天4夜探險之旅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .itinerary-step::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 30px;
+            height: calc(100% - 20px);
+            width: 2px;
+            background-color: #e2e8f0;
+        }
+        .itinerary-step:last-child::before { display: none; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        .main-tab-content { display: none; }
+        .main-tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-btn.active { background-color: #f39c12; color: white; border-color: #f39c12; }
+        .day-tab-btn.active { background-color: #f39c12; color: white; border-color: #f39c12; }
+        .map-link { color: #1d4ed8; transition: all 0.2s; display: inline-flex; align-items: center; }
+        .map-link:hover { color: #2563eb; text-decoration: underline; }
+        .hotel-card { background: linear-gradient(to right, #f8fafc, #ffffff); border-left: 4px solid #f39c12; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-amber-500 to-orange-500 text-white py-10 px-4 text-center shadow-lg">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">🏙️ 名古屋之旅</h1>
+        <p class="text-amber-100 text-lg italic">5 天 4 夜 中部探險計畫</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+        
+        <!-- 快速概覽 -->
+        <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-around items-center text-center">
+            <div>
+                <p class="text-xs text-slate-500 mb-1">主要城市</p>
+                <p class="font-bold text-amber-600">名古屋/高山/白川鄉</p>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div>
+                <p class="text-xs text-slate-500 mb-1">總天數</p>
+                <p class="font-bold text-amber-600">5 Days</p>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div>
+                <p class="text-xs text-slate-500 mb-1">交通卡</p>
+                <p class="font-bold text-amber-600">Suica</p>
+            </div>
+        </section>
+
+        <section class="flex flex-wrap justify-center gap-4 text-xs text-slate-600">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span>名古屋（Day 1、3-5）</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span>高山・白川鄉（Day 2）</span>
+        </section>
+
+        <!-- 主分頁標籤 -->
+        <section class="sticky top-2 z-30">
+            <div class="flex overflow-x-auto no-scrollbar py-2 gap-2 bg-slate-50/80 backdrop-blur-md rounded-xl p-1 shadow-sm">
+                <button onclick="showMainTab('itinerary')" id="btn-main-itinerary" class="tab-btn active shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-calendar-alt mr-1"></i> 行程</button>
+                <button onclick="showMainTab('flight')" id="btn-main-flight" class="tab-btn shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-plane mr-1"></i> 飛機資訊</button>
+                <button onclick="showMainTab('vjw')" id="btn-main-vjw" class="tab-btn shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-qrcode mr-1"></i> VJW 資料</button>
+                <button onclick="showMainTab('shopping')" id="btn-main-shopping" class="tab-btn shrink-0 flex-1 px-5 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-shopping-bag mr-1"></i> 代購清單</button>
+            </div>
+        </section>
+
+        <!-- 行程子分頁標籤 -->
+        <section id="day-tabs-section" class="sticky top-16 z-20 mt-2">
+            <div class="flex py-2 gap-2 bg-slate-50/80 backdrop-blur-md rounded-xl p-1 shadow-sm">
+                <script>
+                    for (let i = 1; i <= 5; i++) {
+                        document.write(`<button onclick="showDayTab(${i})" id="btn-day-${i}" class="day-tab-btn ${i === 1 ? 'active' : ''} flex-1 px-2 py-2 rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm">Day ${i}</button>`);
+                    }
+                </script>
+            </div>
+        </section>
+
+        <!-- 行程詳細內容 -->
+        <section id="itinerary-container" class="bg-white rounded-2xl shadow-sm p-4 md:p-6 border border-slate-100 min-h-[400px]">
+            
+            <!-- 行程主分頁 -->
+            <div id="main-tab-itinerary" class="main-tab-content active">
+                <!-- Day 1 -->
+                <div id="tab-1" class="tab-content active">
+                    <h3 class="text-xl font-bold text-amber-600 mb-6 flex items-center">
+                        <i class="fas fa-plane-arrival mr-2"></i> Day 1 | 10/29(四) 抵達名古屋・購物日
+                    </h3>
+                    <div class="mt-2 mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                        <p class="text-red-800 font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i> ⚠️ 11/1 起日本免稅制度改變！請把握 10/29-10/31 三天購物</p>
+                    </div>
+                    <div class="relative ml-2 mb-8 border-l-2 border-dashed border-amber-200">
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">01</span>
+                            <p class="text-sm text-slate-500 font-medium">06:05</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/中部國際機場" target="_blank" class="map-link">抵達中部國際機場 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">辦理入境、領行李。</p>
+                            <div class="mt-2 bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm space-y-1">
+                                <p class="text-amber-800 font-semibold"><i class="fas fa-moon mr-1"></i> 紅眼班機抵達，建議先休息再出發</p>
+                            </div>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">02</span>
+                            <p class="text-sm text-slate-500 font-medium">08:00</p>
+                            <h4 class="text-lg font-bold">到飯店寄放行李、休息</h4>
+                            <p class="text-slate-600">搭名鐵到名古屋站，先到飯店寄放行李稍作休息。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">03</span>
+                            <p class="text-sm text-slate-500 font-medium">10:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/名古屋城" target="_blank" class="map-link">名古屋城＋本丸御殿 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">日本三大名城之一，本丸御殿華麗重現江戶時代風華。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">04</span>
+                            <p class="text-sm text-slate-500 font-medium">13:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/ひつまぶし+名古屋" target="_blank" class="map-link">午餐：鰻魚飯三吃（ひつまぶし） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋必吃名物！三種吃法：原味、加蔥薑、茶泡飯。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">05</span>
+                            <p class="text-sm text-slate-500 font-medium">15:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/榮+名古屋" target="_blank" class="map-link">🛒 榮商圈購物（免稅） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">松坂屋、三越、PARCO、唐吉訶德、藥妝店集中區。把握免稅最後機會！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">06</span>
+                            <p class="text-sm text-slate-500 font-medium">19:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/味噌豬排+名古屋" target="_blank" class="map-link">晚餐：味噌豬排 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋另一名物，濃郁味噌醬配上酥脆豬排。</p>
+                        </div>
+                    </div>
+                    <!-- 住宿區塊 -->
+                    <div class="hotel-card p-4 rounded-xl border border-slate-100">
+                        <h5 class="text-sm font-bold text-amber-600 mb-2 italic"><i class="fas fa-bed mr-2"></i>今晚住宿 (名古屋)</h5>
+                        <p class="font-bold text-slate-800">待確認</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fas fa-location-dot mr-1"></i> 名古屋站周邊</p>
+                    </div>
+                </div>
+
+                <!-- Day 2 -->
+                <div id="tab-2" class="tab-content">
+                    <h3 class="text-xl font-bold text-emerald-600 mb-6 flex items-center">
+                        <i class="fas fa-mountain mr-2"></i> Day 2 | 10/30(五) 高山・白川鄉🍁
+                    </h3>
+                    <div class="mt-2 mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm">
+                        <p class="text-orange-800 font-semibold"><i class="fas fa-leaf mr-1"></i> 🍁 白川鄉紅葉見頃！10月末～11月初是最佳觀賞時機</p>
+                    </div>
+                    <div class="relative ml-2 mb-8 border-l-2 border-dashed border-emerald-200">
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">01</span>
+                            <p class="text-sm text-slate-500 font-medium">06:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/名鐵巴士中心+名古屋" target="_blank" class="map-link">搭乘高速巴士前往高山（約2.5h） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">從名鐵巴士中心出發，建議買「昇龍道巴士周遊券」最划算！</p>
+                            <div class="mt-2 bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-sm">
+                                <p class="text-emerald-800 font-semibold"><i class="fas fa-lightbulb mr-1"></i> 💡 建議買「昇龍道巴士周遊券」最划算！</p>
+                            </div>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">02</span>
+                            <p class="text-sm text-slate-500 font-medium">09:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/高山陣屋" target="_blank" class="map-link">高山陣屋（江戶時代官署） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">日本現存唯一的江戶時代郡代官府遺跡。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">03</span>
+                            <p class="text-sm text-slate-500 font-medium">10:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/三町老街+高山" target="_blank" class="map-link">三町老街散步＋🛒購物 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">保存完整的江戶時代商家街道，可買飛驒工藝品、地酒等伴手禮（免稅）。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">04</span>
+                            <p class="text-sm text-slate-500 font-medium">11:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/飛驒牛壽司+高山" target="_blank" class="map-link">午餐：飛驒牛壽司 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">必吃飛驒牛握壽司，入口即化的美味！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">05</span>
+                            <p class="text-sm text-slate-500 font-medium">12:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/白川鄉" target="_blank" class="map-link">搭巴士前往白川鄉（約50分） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">前往世界遺產合掌村。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">06</span>
+                            <p class="text-sm text-slate-500 font-medium">13:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/城山展望台+白川鄉" target="_blank" class="map-link">🍁 城山展望台拍全景 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">俯瞰合掌村全景的最佳位置，秋季紅葉配合掌造超美！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">07</span>
+                            <p class="text-sm text-slate-500 font-medium">14:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/白川鄉合掌村" target="_blank" class="map-link">🍁 漫步合掌村 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">世界遺產合掌造建築群，秋天紅葉季節超美！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold z-10">08</span>
+                            <p class="text-sm text-slate-500 font-medium">16:30</p>
+                            <h4 class="text-lg font-bold">搭巴士返回名古屋（約2.5h）</h4>
+                            <p class="text-slate-600">預計 19:00 左右抵達名古屋。</p>
+                        </div>
+                    </div>
+                    <div class="hotel-card p-4 rounded-xl border border-slate-100">
+                        <h5 class="text-sm font-bold text-amber-600 mb-2 italic"><i class="fas fa-bed mr-2"></i>今晚住宿 (名古屋)</h5>
+                        <p class="font-bold text-slate-800">待確認</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fas fa-location-dot mr-1"></i> 名古屋站周邊</p>
+                    </div>
+                </div>
+
+                <!-- Day 3 -->
+                <div id="tab-3" class="tab-content">
+                    <h3 class="text-xl font-bold text-pink-600 mb-6 flex items-center">
+                        <i class="fas fa-shopping-bag mr-2"></i> Day 3 | 10/31(六) 🛒 購物日（免稅最後衝刺！）
+                    </h3>
+                    <div class="mt-2 mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                        <p class="text-red-800 font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i> ⚠️ 免稅最後一天！整天都可以購物，把代購清單買齊！</p>
+                    </div>
+                    <div class="mt-2 mb-4 bg-pink-50 border border-pink-200 rounded-lg p-3 text-sm">
+                        <p class="text-pink-800 font-semibold"><i class="fas fa-clock mr-1"></i> 💡 今日購物時間：約 12 小時（10:00-22:00）</p>
+                    </div>
+                    <div class="relative ml-2 mb-8 border-l-2 border-dashed border-pink-200">
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">01</span>
+                            <p class="text-sm text-slate-500 font-medium">09:00</p>
+                            <h4 class="text-lg font-bold">睡到自然醒・悠閒早餐</h4>
+                            <p class="text-slate-600">經過前兩天的奔波，今天可以稍微晚起，養精蓄銳準備購物！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">02</span>
+                            <p class="text-sm text-slate-500 font-medium">10:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/大須商店街+名古屋" target="_blank" class="map-link">🛒 大須商店街（免稅） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋最熱鬧的商店街！電器、藥妝、服飾、動漫周邊應有盡有。</p>
+                            <div class="mt-2 bg-pink-50 border border-pink-100 rounded-lg p-3 text-sm">
+                                <p class="text-pink-800 font-semibold"><i class="fas fa-lightbulb mr-1"></i> 💡 推薦：大須觀音、萬松寺通、電器街、古著店</p>
+                            </div>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">03</span>
+                            <p class="text-sm text-slate-500 font-medium">13:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/矢場とん+大須" target="_blank" class="map-link">午餐：矢場とん味噌豬排 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋味噌豬排名店，大須店也很方便！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">04</span>
+                            <p class="text-sm text-slate-500 font-medium">14:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/榮+名古屋" target="_blank" class="map-link">🛒 榮商圈購物（免稅） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">松坂屋、三越、PARCO、LACHIC 等百貨公司，補買 Day 1 沒買到的！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">05</span>
+                            <p class="text-sm text-slate-500 font-medium">17:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/榮+藥妝店+名古屋" target="_blank" class="map-link">🛒 藥妝店掃貨 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">松本清、大國藥妝、Sugi藥局等，確認代購清單的藥妝品項！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">06</span>
+                            <p class="text-sm text-slate-500 font-medium">19:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/台灣拉麵+名古屋" target="_blank" class="map-link">晚餐：台灣拉麵（名古屋發祥） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋發祥的辣味拉麵，推薦「味仙」！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center font-bold z-10">07</span>
+                            <p class="text-sm text-slate-500 font-medium">20:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/唐吉訶德+名古屋+榮" target="_blank" class="map-link">🛒 唐吉訶德（免稅最後確認） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">24小時營業，最後確認購物清單有沒有漏買的！這是免稅最後機會！</p>
+                            <div class="mt-2 bg-red-50 border border-red-100 rounded-lg p-3 text-sm">
+                                <p class="text-red-800 font-semibold"><i class="fas fa-clock mr-1"></i> ⏰ 免稅倒數！明天起就沒有免稅了！</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hotel-card p-4 rounded-xl border border-slate-100">
+                        <h5 class="text-sm font-bold text-amber-600 mb-2 italic"><i class="fas fa-bed mr-2"></i>今晚住宿 (名古屋)</h5>
+                        <p class="font-bold text-slate-800">待確認</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fas fa-location-dot mr-1"></i> 名古屋站周邊</p>
+                    </div>
+                </div>
+
+                <!-- Day 4 -->
+                <div id="tab-4" class="tab-content">
+                    <h3 class="text-xl font-bold text-amber-600 mb-6 flex items-center">
+                        <i class="fas fa-landmark mr-2"></i> Day 4 | 11/1(日) 犬山城・柳橋市場・綠洲21
+                    </h3>
+                    <div class="mt-2 mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                        <p class="text-blue-800 font-semibold"><i class="fas fa-info-circle mr-1"></i> 💡 免稅已結束，今天輕鬆觀光！</p>
+                    </div>
+                    <div class="relative ml-2 mb-8 border-l-2 border-dashed border-amber-200">
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">01</span>
+                            <p class="text-sm text-slate-500 font-medium">07:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/柳橋中央市場" target="_blank" class="map-link">柳橋中央市場 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋最大的傳統市場，早起來吃新鮮海鮮早餐！營業時間很早，建議 7-9 點來最熱鬧。</p>
+                            <div class="mt-2 bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm">
+                                <p class="text-amber-800 font-semibold"><i class="fas fa-lightbulb mr-1"></i> 💡 推薦：海鮮丼、鰻魚、炸蝦天婦羅</p>
+                            </div>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">02</span>
+                            <p class="text-sm text-slate-500 font-medium">09:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/犬山站" target="_blank" class="map-link">搭名鐵前往犬山 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">從名古屋站搭名鐵約 30 分鐘。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">03</span>
+                            <p class="text-sm text-slate-500 font-medium">09:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/國寶犬山城" target="_blank" class="map-link">國寶犬山城（現存最古天守） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">日本現存 12 座天守之一，也是國寶級城堡。從天守閣可以眺望木曾川美景！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">04</span>
+                            <p class="text-sm text-slate-500 font-medium">11:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/犬山城下町" target="_blank" class="map-link">犬山城下町散步・糰子串 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">復古風情的城下町，可愛的糰子串和各種美食。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">05</span>
+                            <p class="text-sm text-slate-500 font-medium">12:30</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/田樂+犬山" target="_blank" class="map-link">午餐：田樂味噌料理 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">當地特色的田樂味噌豆腐料理。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">06</span>
+                            <p class="text-sm text-slate-500 font-medium">14:00</p>
+                            <h4 class="text-lg font-bold">返回名古屋</h4>
+                            <p class="text-slate-600">搭名鐵返回名古屋市區。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">07</span>
+                            <p class="text-sm text-slate-500 font-medium">15:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/榮+名古屋" target="_blank" class="map-link">榮商圈逛街 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">輕鬆逛逛，不用趕購物了～如果有漏買的小東西也可以補。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">08</span>
+                            <p class="text-sm text-slate-500 font-medium">17:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/綠洲21+名古屋" target="_blank" class="map-link">綠洲21（Oasis 21） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋地標建築，有「水の宇宙船」之稱，傍晚夜景很漂亮！</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">09</span>
+                            <p class="text-sm text-slate-500 font-medium">19:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/世界的山醬手羽先+名古屋" target="_blank" class="map-link">晚餐：世界的山醬手羽先 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋名物炸雞翅，酥脆香辣超好吃！</p>
+                        </div>
+                    </div>
+                    <div class="hotel-card p-4 rounded-xl border border-slate-100">
+                        <h5 class="text-sm font-bold text-amber-600 mb-2 italic"><i class="fas fa-bed mr-2"></i>今晚住宿 (名古屋)</h5>
+                        <p class="font-bold text-slate-800">待確認</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fas fa-location-dot mr-1"></i> 名古屋站周邊</p>
+                    </div>
+                </div>
+
+                <!-- Day 5 -->
+                <div id="tab-5" class="tab-content">
+                    <h3 class="text-xl font-bold text-amber-600 mb-6 flex items-center">
+                        <i class="fas fa-plane-departure mr-2"></i> Day 5 | 11/2(一) 最後巡禮・返程
+                    </h3>
+                    <div class="relative ml-2 mb-8 border-l-2 border-dashed border-amber-200">
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">01</span>
+                            <p class="text-sm text-slate-500 font-medium">09:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/熱田神宮" target="_blank" class="map-link">熱田神宮參拜 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">日本三大神宮之一，供奉三神器之一的草薙劍。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">02</span>
+                            <p class="text-sm text-slate-500 font-medium">11:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/きしめん+名古屋" target="_blank" class="map-link">午餐：きしめん（名古屋烏龍麵） <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋特有的扁平烏龍麵，熱田神宮境內的「宮きしめん」很有名。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">03</span>
+                            <p class="text-sm text-slate-500 font-medium">13:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/名古屋站+伴手禮" target="_blank" class="map-link">最後採買伴手禮 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">名古屋站周邊購買蝦餅、小倉吐司、青柳外郎等名產。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12 pb-8">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">04</span>
+                            <p class="text-sm text-slate-500 font-medium">17:00</p>
+                            <h4 class="text-lg font-bold"><a href="https://www.google.com/maps/search/中部國際機場" target="_blank" class="map-link">前往中部國際機場 <i class="fas fa-map-marker-alt ml-1 text-xs"></i></a></h4>
+                            <p class="text-slate-600">搭名鐵前往中部國際機場，約 30 分鐘。</p>
+                        </div>
+                        <div class="itinerary-step relative pl-12">
+                            <span class="absolute left-0 top-0 w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold z-10">05</span>
+                            <p class="text-sm text-slate-500 font-medium">22:55</p>
+                            <h4 class="text-lg font-bold">搭機返回台灣</h4>
+                            <p class="text-slate-600">樂桃航空 MM726 名古屋→桃園，預計隔日 01:30 抵達。</p>
+                            <div class="mt-2 bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-sm">
+                                <p class="text-emerald-800 font-semibold"><i class="fas fa-check-circle mr-1"></i> ✅ 深夜班機，最後一天整天可用！</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 飛機資訊主分頁 -->
+            <div id="main-tab-flight" class="main-tab-content">
+                <h3 class="text-xl font-bold text-indigo-600 mb-6 flex items-center">
+                    <i class="fas fa-plane mr-2"></i> 飛機資訊
+                </h3>
+                <div class="space-y-6">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-3 flex items-center">
+                            <i class="fas fa-plane-departure mr-2"></i> 去程航班 (10/29)
+                        </h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-start">
+                                <span class="font-medium text-slate-700 w-24">航空公司：</span>
+                                <span class="text-slate-600 flex-1">樂桃航空</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="font-medium text-slate-700 w-24">航班號碼：</span>
+                                <span class="text-slate-600 flex-1">MM725（待確認）</span>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-blue-200">
+                                <div class="flex items-center justify-center gap-3 text-lg font-bold">
+                                    <div class="text-center">
+                                        <div class="text-blue-700 text-xl">02:10</div>
+                                        <div class="text-slate-600 text-base mt-1">TPE 桃園國際機場</div>
+                                    </div>
+                                    <i class="fas fa-arrow-right text-blue-500 text-2xl"></i>
+                                    <div class="text-center">
+                                        <div class="text-blue-700 text-xl">06:05</div>
+                                        <div class="text-slate-600 text-base mt-1">NGO 中部國際機場</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-blue-200">
+                                <p class="font-medium text-slate-700 mb-3">行李資訊：</p>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm border-collapse">
+                                        <thead>
+                                            <tr class="bg-blue-100">
+                                                <th class="border border-blue-200 px-3 py-2 text-left font-semibold text-blue-800">行李類型</th>
+                                                <th class="border border-blue-200 px-3 py-2 text-left font-semibold text-blue-800">重量限制</th>
+                                                <th class="border border-blue-200 px-3 py-2 text-left font-semibold text-blue-800">件數限制</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border border-blue-200 px-3 py-2 font-medium text-slate-700">手提行李</td>
+                                                <td class="border border-blue-200 px-3 py-2 text-slate-600">7KG</td>
+                                                <td class="border border-blue-200 px-3 py-2 text-slate-600">2件</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border border-blue-200 px-3 py-2 font-medium text-slate-700">托運行李</td>
+                                                <td class="border border-blue-200 px-3 py-2 text-slate-600">依購買方案</td>
+                                                <td class="border border-blue-200 px-3 py-2 text-slate-600">依購買方案</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-3 flex items-start">
+                                    <span class="font-medium text-slate-700 w-24">官網連結：</span>
+                                    <span class="text-slate-600 flex-1">
+                                        <a href="https://www.flypeach.com/tw" target="_blank" class="text-blue-600 hover:text-blue-800 underline">樂桃航空官網 <i class="fas fa-external-link-alt mr-1 text-xs"></i></a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                        <h4 class="font-bold text-amber-800 mb-3 flex items-center">
+                            <i class="fas fa-plane-arrival mr-2"></i> 回程航班 (11/2-3)
+                        </h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-start">
+                                <span class="font-medium text-slate-700 w-24">航空公司：</span>
+                                <span class="text-slate-600 flex-1">樂桃航空</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="font-medium text-slate-700 w-24">航班號碼：</span>
+                                <span class="text-slate-600 flex-1">MM726（待確認）</span>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-amber-200">
+                                <div class="flex items-center justify-center gap-3 text-lg font-bold">
+                                    <div class="text-center">
+                                        <div class="text-amber-700 text-xl">22:55</div>
+                                        <div class="text-slate-600 text-base mt-1">NGO 中部國際機場</div>
+                                    </div>
+                                    <i class="fas fa-arrow-right text-amber-500 text-2xl"></i>
+                                    <div class="text-center">
+                                        <div class="text-amber-700 text-xl">01:30<sup>+1</sup></div>
+                                        <div class="text-slate-600 text-base mt-1">TPE 桃園國際機場</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-amber-200">
+                                <p class="font-medium text-slate-700 mb-3">行李資訊：</p>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm border-collapse">
+                                        <thead>
+                                            <tr class="bg-amber-100">
+                                                <th class="border border-amber-200 px-3 py-2 text-left font-semibold text-amber-800">行李類型</th>
+                                                <th class="border border-amber-200 px-3 py-2 text-left font-semibold text-amber-800">重量限制</th>
+                                                <th class="border border-amber-200 px-3 py-2 text-left font-semibold text-amber-800">件數限制</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border border-amber-200 px-3 py-2 font-medium text-slate-700">手提行李</td>
+                                                <td class="border border-amber-200 px-3 py-2 text-slate-600">7KG</td>
+                                                <td class="border border-amber-200 px-3 py-2 text-slate-600">2件</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border border-amber-200 px-3 py-2 font-medium text-slate-700">托運行李</td>
+                                                <td class="border border-amber-200 px-3 py-2 text-slate-600">依購買方案</td>
+                                                <td class="border border-amber-200 px-3 py-2 text-slate-600">依購買方案</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-3 flex items-start">
+                                    <span class="font-medium text-slate-700 w-24">官網連結：</span>
+                                    <span class="text-slate-600 flex-1">
+                                        <a href="https://www.flypeach.com/tw" target="_blank" class="text-amber-600 hover:text-amber-800 underline">樂桃航空官網 <i class="fas fa-external-link-alt mr-1 text-xs"></i></a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VJW 資料主分頁 -->
+            <div id="main-tab-vjw" class="main-tab-content">
+                <h3 class="text-xl font-bold text-emerald-600 mb-6 flex items-center">
+                    <i class="fas fa-qrcode mr-2"></i> VJW 資料
+                </h3>
+                <div class="space-y-6">
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                        <h4 class="font-bold text-emerald-800 mb-3 flex items-center">
+                            <i class="fas fa-user mr-2"></i> 個人資料
+                        </h4>
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="font-bold text-emerald-700 mb-2">去程航班</p>
+                                <div class="space-y-2 pl-4">
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">航空公司名稱：</span>
+                                        <span class="text-slate-600 flex-1">樂桃航空 MM : PEACH AVIATION</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">班機號：</span>
+                                        <span class="text-slate-600 flex-1">MM725（待確認）</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">抵達時間：</span>
+                                        <span class="text-slate-600 flex-1">06:05 NGO</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-emerald-200">
+                                <p class="font-bold text-emerald-700 mb-2">住宿 (日文英文擇一填就好)</p>
+                                <div class="space-y-2 pl-4">
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">都道府縣：</span>
+                                        <span class="text-slate-600 flex-1">愛知県 / AICHI KEN</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">市區町村名：</span>
+                                        <span class="text-slate-600 flex-1">名古屋市中村区 / NAGOYA SHI NAKAMURA KU</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">町字、番地：</span>
+                                        <span class="text-slate-600 flex-1">待確認</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">飯店名稱：</span>
+                                        <span class="text-slate-600 flex-1">待確認</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <span class="font-medium text-slate-700 w-32">在日本電話號碼：</span>
+                                        <span class="text-slate-600 flex-1">待確認</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-3 flex items-center">
+                            <i class="fas fa-qrcode mr-2"></i> QR Code 資訊
+                        </h4>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <p class="font-medium text-slate-700 mb-2">入境審查 QR Code：</p>
+                                <p class="text-slate-500 text-xs mb-2">請在 Visit Japan Web 完成入境審查手續後，截圖保存 QR Code</p>
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 min-h-[100px] flex items-center justify-center text-slate-400">
+                                    <i class="fas fa-image text-3xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="font-medium text-slate-700 mb-2">海關申報 QR Code：</p>
+                                <p class="text-slate-500 text-xs mb-2">請在 Visit Japan Web 完成海關申報手續後，截圖保存 QR Code</p>
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 min-h-[100px] flex items-center justify-center text-slate-400">
+                                    <i class="fas fa-image text-3xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                        <h4 class="font-bold text-amber-800 mb-3 flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i> 重要提醒
+                        </h4>
+                        <ul class="space-y-2 text-sm text-amber-800">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-0.5 text-amber-600"></i>
+                                <span>請在出發前完成 Visit Japan Web 的註冊與登錄</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-0.5 text-amber-600"></i>
+                                <span>建議將 QR Code 截圖保存至手機相簿，方便快速出示</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-0.5 text-amber-600"></i>
+                                <span>入境審查與海關申報的 QR Code 需分別準備</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-0.5 text-amber-600"></i>
+                                <span>Visit Japan Web 網址：<a href="https://www.vjw.digital.go.jp" target="_blank" class="text-blue-600 underline">www.vjw.digital.go.jp</a></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 代購清單主分頁 -->
+            <div id="main-tab-shopping" class="main-tab-content">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+                    <h3 class="text-xl font-bold text-pink-600 flex items-center">
+                        <i class="fas fa-shopping-bag mr-2"></i> 代購清單
+                    </h3>
+                    <a href="202610JP-nagoya-expense.html" class="px-4 py-2 rounded-lg bg-emerald-500 text-white font-bold text-sm hover:bg-emerald-600 transition-all">
+                        <i class="fas fa-calculator mr-1"></i> 開啟記帳本
+                    </a>
+                </div>
+                <p class="text-sm text-slate-500 mb-4">統計需要幫別人帶的東西，勾選已買到的品項。</p>
+
+                <!-- 新增品項表單 -->
+                <div id="shop-form-panel" class="bg-pink-50 border border-pink-100 rounded-xl p-4 mb-6">
+                    <h4 id="shop-form-title" class="text-sm font-bold text-pink-700 mb-3"><i class="fas fa-plus-circle mr-1"></i> 新增品項</h4>
+                    <input type="hidden" id="shop-edit-key" value="">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                        <input type="text" id="shop-person" placeholder="委託人" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <select id="shop-category" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                            <option value="藥妝">藥妝</option>
+                            <option value="動漫">動漫</option>
+                            <option value="零食">零食</option>
+                            <option value="衣服">衣服</option>
+                            <option value="其他">其他</option>
+                        </select>
+                        <input type="text" id="shop-item" placeholder="品項名稱" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 sm:col-span-2 md:col-span-1">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                        <input type="number" id="shop-qty" placeholder="數量" value="1" min="1" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <input type="text" id="shop-img-url" placeholder="圖片網址（選填）" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <input type="text" id="shop-note" placeholder="備註（選填）" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="shop-submit-btn" onclick="saveShoppingItem()" class="flex-1 px-5 py-2 bg-pink-600 text-white rounded-lg font-bold text-sm hover:bg-pink-700 transition-all">
+                            <i class="fas fa-plus mr-1"></i> 新增品項
+                        </button>
+                        <button id="shop-cancel-edit" onclick="cancelEditShopping()" class="hidden px-5 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all">
+                            取消
+                        </button>
+                        <button id="shop-delete-btn" onclick="deleteShoppingItem()" class="hidden px-5 py-2 bg-red-500 text-white rounded-lg font-bold text-sm hover:bg-red-600 transition-all">
+                            <i class="fas fa-trash-alt mr-1"></i> 刪除
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搜尋框 -->
+                <div class="relative mb-4">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="shop-search" placeholder="搜尋委託人、品項、備註..." 
+                        oninput="filterShoppingWithSearch()"
+                        class="w-full pl-10 pr-4 py-2 border border-pink-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+                </div>
+
+                <!-- 分類篩選 -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button onclick="filterShopping('all')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-bold transition-all ring-2 ring-pink-400" data-filter="all">全部</button>
+                    <button onclick="filterShopping('藥妝')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 text-xs font-bold transition-all" data-filter="藥妝">藥妝</button>
+                    <button onclick="filterShopping('動漫')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold transition-all" data-filter="動漫">動漫</button>
+                    <button onclick="filterShopping('零食')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold transition-all" data-filter="零食">零食</button>
+                    <button onclick="filterShopping('衣服')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold transition-all" data-filter="衣服">衣服</button>
+                    <button onclick="filterShopping('其他')" class="shop-filter-btn px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold transition-all" data-filter="其他">其他</button>
+                </div>
+
+                <!-- 手機版排序 -->
+                <div class="md:hidden flex items-center gap-2 mb-3 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2">
+                    <span class="text-xs text-slate-500 shrink-0">排序</span>
+                    <select id="shop-sort-select" onchange="setShoppingSortColumn(this.value)" class="flex-1 min-w-0 px-2 py-1.5 rounded-md border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <option value="checked">已購買</option>
+                        <option value="person">委託人</option>
+                        <option value="category">分類</option>
+                        <option value="item">品項</option>
+                        <option value="qty">數量</option>
+                        <option value="note">備註</option>
+                    </select>
+                    <button type="button" onclick="toggleShoppingSortDirection()" class="shrink-0 w-9 h-8 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 hover:bg-pink-50 hover:text-pink-600 transition-all" title="切換升降序">
+                        <span id="shop-sort-dir-icon" class="text-sm font-bold">↑</span>
+                    </button>
+                </div>
+
+                <!-- 手機版卡片清單 -->
+                <div id="shopping-list-cards" class="md:hidden space-y-2">
+                    <p class="py-6 text-center text-slate-400 text-sm">載入中...</p>
+                </div>
+
+                <!-- 電腦版表格 -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-pink-50 text-pink-700">
+                                <th class="py-2 px-3 text-left rounded-tl-lg cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="checked" onclick="sortShoppingBy('checked')">✓<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="person" onclick="sortShoppingBy('person')">委託人<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="category" onclick="sortShoppingBy('category')">分類<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="item" onclick="sortShoppingBy('item')">品項<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="qty" onclick="sortShoppingBy('qty')">數量<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left">圖片</th>
+                                <th class="py-2 px-3 text-left cursor-pointer select-none hover:bg-pink-100 shop-sort-th" data-sort="note" onclick="sortShoppingBy('note')">備註<span class="sort-icon text-xs"></span></th>
+                                <th class="py-2 px-3 text-left rounded-tr-lg">修改</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shopping-list-body">
+                            <tr><td colspan="8" class="py-6 text-center text-slate-400 text-sm">載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-xs text-slate-400 mt-4 italic">💡 品項與勾選狀態即時同步，所有人看到的清單一致。</p>
+            </div>
+
+        </section>
+
+        <!-- 工具欄 -->
+        <section class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+                <h2 class="text-lg font-bold mb-4 flex items-center text-emerald-600">
+                    <i class="fas fa-check-square mr-2"></i> 快速核對清單
+                </h2>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center space-x-2" onclick="toggleCheck(this)">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300">
+                        <span>護照、機票、VJW QR Code</span>
+                    </li>
+                    <li class="flex items-center space-x-2" onclick="toggleCheck(this)">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300">
+                        <span>日圓現鈔、Suica交通卡</span>
+                    </li>
+                    <li class="flex items-center space-x-2" onclick="toggleCheck(this)">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300">
+                        <span>網卡、衣物、藥品</span>
+                    </li>
+                    <li class="flex items-center space-x-2" onclick="toggleCheck(this)">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300">
+                        <span>昇龍道巴士周遊券</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+                <h2 class="text-lg font-bold mb-2 flex items-center text-amber-700">
+                    <i class="fas fa-info-circle mr-2"></i> 小提醒
+                </h2>
+                <ul class="text-xs text-amber-800 leading-relaxed space-y-2">
+                    <li><b>🚌 昇龍道巴士：</b>建議購買「昇龍道巴士周遊券」，可搭乘名古屋-高山-白川鄉巴士</li>
+                    <li><b>� 柳橋市場：</b>早上 7-9 點最熱鬧，很多店家中午就收攤了</li>
+                    <li><b>🍂 秋季服裝：</b>10月底名古屋氣溫約 10-18°C，高山和白川鄉會更冷，建議準備外套</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-8 py-8 bg-slate-800 text-center text-slate-400 text-xs">
+        <p>祝旅途平安順心！ ❤️</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        // Firebase 初始化
+        firebase.initializeApp({
+            databaseURL: "https://jp-9c9f8-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        });
+        const db = firebase.database();
+        const itemsRef = db.ref('shopping_items_nagoya');
+
+        // 分類顏色對應
+        const categoryColors = {
+            '藥妝': 'bg-green-100 text-green-700',
+            '動漫': 'bg-blue-100 text-blue-700',
+            '零食': 'bg-amber-100 text-amber-700',
+            '衣服': 'bg-purple-100 text-purple-700',
+            '其他': 'bg-slate-100 text-slate-700'
+        };
+
+        let currentFilter = 'all';
+        let shoppingSort = { column: 'person', direction: 'asc' };
+        let shoppingEntries = [];
+
+        function sortShoppingEntries(entries) {
+            const { column, direction } = shoppingSort;
+            const mul = direction === 'asc' ? 1 : -1;
+            return [...entries].sort(([, a], [, b]) => {
+                let cmp = 0;
+                switch (column) {
+                    case 'checked': cmp = Number(!!a.checked) - Number(!!b.checked); break;
+                    case 'person': cmp = (a.person || '').localeCompare(b.person || '', 'zh-Hant'); break;
+                    case 'category': cmp = (a.category || '').localeCompare(b.category || '', 'zh-Hant'); break;
+                    case 'item': cmp = (a.item || '').localeCompare(b.item || '', 'zh-Hant'); break;
+                    case 'qty': cmp = (parseFloat(a.qty) || 0) - (parseFloat(b.qty) || 0); break;
+                    case 'note': cmp = (a.note || '').localeCompare(b.note || '', 'zh-Hant'); break;
+                }
+                if (cmp === 0) {
+                    cmp = (a.person || '').localeCompare(b.person || '', 'zh-Hant');
+                    if (cmp === 0) cmp = (a.item || '').localeCompare(b.item || '', 'zh-Hant');
+                }
+                return cmp * mul;
+            });
+        }
+
+        function updateSortHeaders() {
+            document.querySelectorAll('.shop-sort-th').forEach((th) => {
+                const col = th.dataset.sort;
+                const icon = th.querySelector('.sort-icon');
+                if (!icon) return;
+                icon.textContent = col === shoppingSort.column ? (shoppingSort.direction === 'asc' ? ' ↑' : ' ↓') : '';
+            });
+            const select = document.getElementById('shop-sort-select');
+            const dirIcon = document.getElementById('shop-sort-dir-icon');
+            if (select) select.value = shoppingSort.column;
+            if (dirIcon) dirIcon.textContent = shoppingSort.direction === 'asc' ? '↑' : '↓';
+        }
+
+        function sortShoppingBy(column) {
+            if (shoppingSort.column === column) {
+                shoppingSort.direction = shoppingSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                shoppingSort.column = column;
+                shoppingSort.direction = 'asc';
+            }
+            renderShoppingList(shoppingEntries);
+        }
+
+        function setShoppingSortColumn(column) { shoppingSort.column = column; renderShoppingList(shoppingEntries); }
+        function toggleShoppingSortDirection() { shoppingSort.direction = shoppingSort.direction === 'asc' ? 'desc' : 'asc'; renderShoppingList(shoppingEntries); }
+
+        function renderShoppingList(entries) {
+            const tbody = document.getElementById('shopping-list-body');
+            const cards = document.getElementById('shopping-list-cards');
+            if (!tbody || !cards) return;
+
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 text-sm">尚無代購品項，從上方新增！</td></tr>';
+                cards.innerHTML = '<p class="py-6 text-center text-slate-400 text-sm">尚無代購品項，從上方新增！</p>';
+                updateSortHeaders();
+                return;
+            }
+
+            const sorted = sortShoppingEntries(entries);
+            tbody.innerHTML = '';
+            cards.innerHTML = '';
+            sorted.forEach(([key, item]) => {
+                const colorClass = categoryColors[item.category] || categoryColors['其他'];
+                const checked = item.checked ? 'checked' : '';
+                const rowClass = item.checked ? 'opacity-40 line-through' : '';
+                const display = (currentFilter === 'all' || item.category === currentFilter) ? '' : 'display:none;';
+                const imgHtml = item.img ? `<img src="${item.img}" alt="商品圖" onclick="enlargeImg(this, event)" class="w-12 h-12 object-cover rounded border border-slate-200 cursor-pointer">` : '<span class="text-slate-300 text-xs">無圖</span>';
+                const mobileImgHtml = item.img ? `<img src="${item.img}" alt="商品圖" onclick="enlargeImg(this, event)" class="w-14 h-14 object-cover rounded-md border border-slate-200 cursor-pointer shrink-0">` : '';
+                const mobileNoteHtml = item.note ? `<p class="text-xs text-slate-500 mt-0.5 leading-snug break-words">${item.note}</p>` : '';
+
+                tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 shop-item ${rowClass} cursor-pointer" data-category="${item.category}" data-key="${key}" style="${display}" onclick="toggleShoppingCheckByKey('${key}', this.querySelector('input[type=checkbox]'))">
+                    <td class="py-2 px-3" onclick="event.stopPropagation()"><input type="checkbox" class="w-4 h-4 rounded border-slate-300 cursor-pointer" ${checked} onchange="toggleShoppingCheckByKey('${key}', this); event.stopPropagation();"></td>
+                    <td class="py-2 px-3 font-medium">${item.person}</td>
+                    <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full ${colorClass} text-xs">${item.category}</span></td>
+                    <td class="py-2 px-3">${item.item}</td>
+                    <td class="py-2 px-3">${item.qty}</td>
+                    <td class="py-2 px-3" onclick="event.stopPropagation()">${imgHtml}</td>
+                    <td class="py-2 px-3 text-slate-500">${item.note || ''}</td>
+                    <td class="py-2 px-3" onclick="event.stopPropagation()"><button onclick="editShoppingItem('${key}')" class="text-blue-500 hover:text-blue-700 p-1"><i class="fas fa-pen"></i></button></td>
+                </tr>`;
+
+                cards.innerHTML += `<div class="shop-item border border-slate-200 rounded-lg px-2.5 py-2.5 bg-white ${rowClass} cursor-pointer hover:bg-slate-50 transition" data-category="${item.category}" data-key="${key}" style="${display}" onclick="toggleShoppingCheckByRow('${key}', this)">
+                    <div class="flex items-start gap-2.5">
+                        <div onclick="event.stopPropagation()"><input type="checkbox" class="mt-2 w-5 h-5 shrink-0 rounded border-slate-300 cursor-pointer" ${checked} onchange="toggleShoppingCheckByKey('${key}', this)"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-bold text-base text-slate-800">${item.person}</span>
+                                <span class="px-1.5 py-0.5 rounded-full ${colorClass} text-xs leading-5">${item.category}</span>
+                                <span class="text-sm text-slate-500 font-semibold">×${item.qty}</span>
+                            </div>
+                            <p class="text-base text-slate-700 leading-snug break-words mt-0.5">${item.item}</p>
+                            ${mobileNoteHtml}
+                        </div>
+                        <div onclick="event.stopPropagation()">${mobileImgHtml}</div>
+                        <button onclick="event.stopPropagation(); editShoppingItem('${key}')" class="shrink-0 p-1.5 text-blue-500 hover:text-blue-700"><i class="fas fa-pen text-sm"></i></button>
+                    </div>
+                </div>`;
+            });
+            updateSortHeaders();
+        }
+
+        itemsRef.on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            shoppingEntries = Object.entries(data);
+            renderShoppingList(shoppingEntries);
+        });
+
+        function saveShoppingItem() {
+            const person = document.getElementById('shop-person').value.trim();
+            const category = document.getElementById('shop-category').value;
+            const item = document.getElementById('shop-item').value.trim();
+            const qty = document.getElementById('shop-qty').value || '1';
+            const img = document.getElementById('shop-img-url').value.trim();
+            const note = document.getElementById('shop-note').value.trim();
+            const editKey = document.getElementById('shop-edit-key').value;
+            if (!person || !item) { alert('請至少填寫委託人和品項名稱'); return; }
+            if (editKey) {
+                itemsRef.child(editKey).update({ person, category, item, qty, img, note });
+            } else {
+                itemsRef.push({ person, category, item, qty, img, note, checked: false, createdAt: Date.now() });
+            }
+            resetShoppingForm();
+        }
+
+        function resetShoppingForm() {
+            document.getElementById('shop-edit-key').value = '';
+            document.getElementById('shop-person').value = '';
+            document.getElementById('shop-category').value = '藥妝';
+            document.getElementById('shop-item').value = '';
+            document.getElementById('shop-qty').value = '1';
+            document.getElementById('shop-img-url').value = '';
+            document.getElementById('shop-note').value = '';
+            document.getElementById('shop-form-title').innerHTML = '<i class="fas fa-plus-circle mr-1"></i> 新增品項';
+            document.getElementById('shop-submit-btn').innerHTML = '<i class="fas fa-plus mr-1"></i> 新增品項';
+            document.getElementById('shop-cancel-edit').classList.add('hidden');
+            document.getElementById('shop-delete-btn').classList.add('hidden');
+        }
+
+        function editShoppingItem(key) {
+            itemsRef.child(key).once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                document.getElementById('shop-edit-key').value = key;
+                document.getElementById('shop-person').value = data.person || '';
+                document.getElementById('shop-category').value = data.category || '藥妝';
+                document.getElementById('shop-item').value = data.item || '';
+                document.getElementById('shop-qty').value = data.qty || '1';
+                document.getElementById('shop-img-url').value = data.img || '';
+                document.getElementById('shop-note').value = data.note || '';
+                document.getElementById('shop-form-title').innerHTML = '<i class="fas fa-pen mr-1"></i> 編輯品項';
+                document.getElementById('shop-submit-btn').innerHTML = '<i class="fas fa-save mr-1"></i> 儲存修改';
+                document.getElementById('shop-cancel-edit').classList.remove('hidden');
+                document.getElementById('shop-delete-btn').classList.remove('hidden');
+            });
+        }
+
+        function cancelEditShopping() { resetShoppingForm(); }
+
+        function deleteShoppingItem() {
+            const editKey = document.getElementById('shop-edit-key').value;
+            if (!editKey) return;
+            if (confirm('確定要刪除這個品項嗎？')) {
+                itemsRef.child(editKey).remove().then(() => resetShoppingForm());
+            }
+        }
+
+        function toggleShoppingCheckByKey(key, checkbox) { if (key) itemsRef.child(key).update({ checked: checkbox.checked }); }
+        function toggleShoppingCheckByRow(key, row) {
+            const checkbox = row.querySelector('input[type=checkbox]');
+            if (checkbox) { checkbox.checked = !checkbox.checked; toggleShoppingCheckByKey(key, checkbox); }
+        }
+
+        function filterShopping(category) {
+            currentFilter = category;
+            filterShoppingWithSearch();
+            document.querySelectorAll('.shop-filter-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-pink-400');
+                if (btn.dataset.filter === category) btn.classList.add('ring-2', 'ring-pink-400');
+            });
+        }
+
+        function filterShoppingWithSearch() {
+            const searchText = (document.getElementById('shop-search').value || '').toLowerCase();
+            document.querySelectorAll('.shop-item').forEach(item => {
+                const category = item.dataset.category;
+                const key = item.dataset.key;
+                const entry = shoppingEntries.find(([k, _]) => k === key);
+                if (!entry) { item.style.display = 'none'; return; }
+                const data = entry[1];
+                const matchCategory = currentFilter === 'all' || category === currentFilter;
+                const searchContent = `${data.person || ''} ${data.item || ''} ${data.note || ''}`.toLowerCase();
+                const matchSearch = !searchText || searchContent.includes(searchText);
+                item.style.display = (matchCategory && matchSearch) ? '' : 'none';
+            });
+        }
+
+        function enlargeImg(img, event) {
+            if (event) event.stopPropagation();
+            if (!img.src) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4';
+            overlay.onclick = () => overlay.remove();
+            const bigImg = document.createElement('img');
+            bigImg.src = img.src;
+            bigImg.className = 'max-w-full max-h-[80vh] rounded-lg shadow-2xl';
+            overlay.appendChild(bigImg);
+            document.body.appendChild(overlay);
+        }
+
+        function showMainTab(tabName) {
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('main-tab-' + tabName).classList.add('active');
+            document.getElementById('btn-main-' + tabName).classList.add('active');
+            const dayTabsSection = document.getElementById('day-tabs-section');
+            dayTabsSection.style.display = tabName === 'itinerary' ? 'block' : 'none';
+        }
+
+        function showDayTab(dayNum) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.day-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + dayNum).classList.add('active');
+            document.getElementById('btn-day-' + dayNum).classList.add('active');
+        }
+
+        function toggleCheck(el) {
+            const checkbox = el.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            const textSpan = el.querySelector('span');
+            textSpan.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+            textSpan.style.color = checkbox.checked ? '#94a3b8' : '';
+        }
+    </script>
+</body>
+</html>
