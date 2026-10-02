@@ -47,11 +47,14 @@
             .bag-table th, .bag-table td { padding: 6px 6px !important; font-size: 12px; }
             .bag-table th:first-child, .bag-table td:first-child, .bag-table th:last-child, .bag-table td:last-child { white-space: nowrap; }
             .flight-airport { font-size: 13px; white-space: nowrap; }
-            main.max-w-4xl { padding-left: 8px !important; padding-right: 8px !important; }
-            #itinerary-container { padding: 10px !important; }
+            main.max-w-4xl { padding-left: 4px !important; padding-right: 4px !important; }
+            #itinerary-container { padding: 8px !important; }
             #itinerary-container .p-4 { padding: 12px !important; }
             #itinerary-container .p-3 { padding: 10px !important; }
             #itinerary-container .itinerary-step { padding-left: 40px !important; }
+            #main-tab-cards .p-4 { padding: 8px !important; }
+            #main-tab-cards .p-3 { padding: 6px !important; }
+            #main-tab-cards .space-y-6 > * + * { margin-top: 12px !important; }
             #itinerary-container .itinerary-step > span.absolute { width: 32px !important; height: 32px !important; font-size: 13px; }
         }
     </style>
@@ -94,11 +97,11 @@
         <section class="sticky top-2 z-30">
             <div class="flex overflow-x-auto no-scrollbar py-2 gap-2 bg-slate-50/80 backdrop-blur-md rounded-xl p-1 shadow-sm">
                 <button onclick="showMainTab('itinerary')" id="btn-main-itinerary" class="tab-btn active shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-calendar-alt mr-1"></i> 行程</button>
+                <button onclick="showMainTab('cards')" id="btn-main-cards" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-credit-card mr-1"></i> 刷卡攻略</button>
+                <button onclick="showMainTab('shopping')" id="btn-main-shopping" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-shopping-bag mr-1"></i> 代購清單</button>
                 <button onclick="showMainTab('transport')" id="btn-main-transport" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-train-subway mr-1"></i> 交通與航班</button>
                 <button onclick="showMainTab('spare')" id="btn-main-spare" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-box-archive mr-1"></i> 備選行程</button>
-                <button onclick="showMainTab('cards')" id="btn-main-cards" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-credit-card mr-1"></i> 刷卡攻略</button>
                 <button onclick="showMainTab('vjw')" id="btn-main-vjw" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-qrcode mr-1"></i> VJW・免稅</button>
-                <button onclick="showMainTab('shopping')" id="btn-main-shopping" class="tab-btn shrink-0 flex-1 px-3 py-2 whitespace-nowrap rounded-lg border border-slate-200 bg-white font-bold transition-all text-sm"><i class="fas fa-shopping-bag mr-1"></i> 代購清單</button>
             </div>
         </section>
 
