@@ -37,6 +37,17 @@
         .map-link { color: #1d4ed8; transition: all 0.2s; display: inline-flex; align-items: center; }
         .map-link:hover { color: #2563eb; text-decoration: underline; }
         .hotel-card { background: linear-gradient(to right, #f8fafc, #ffffff); border-left: 4px solid #f39c12; }
+        @media (max-width: 640px) {
+            .stack-sm { min-width: 0 !important; }
+            .stack-sm thead { display: none; }
+            .stack-sm, .stack-sm tbody, .stack-sm tr, .stack-sm td { display: block; width: 100%; }
+            .stack-sm tr { border: 1px solid rgba(100,116,139,.35); border-radius: 8px; margin-bottom: 8px; overflow: hidden; background: #fff; }
+            .stack-sm td { border: 0 !important; padding: 4px 10px !important; }
+            .stack-sm td:first-child { font-weight: 600; background: rgba(100,116,139,.10); }
+            .bag-table th, .bag-table td { padding: 6px 6px !important; font-size: 12px; }
+            .bag-table th:first-child, .bag-table td:first-child, .bag-table th:last-child, .bag-table td:last-child { white-space: nowrap; }
+            .flight-airport { font-size: 13px; white-space: nowrap; }
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -133,19 +144,19 @@
                                 <div class="flex items-center justify-center gap-3 text-lg font-bold">
                                     <div class="text-center">
                                         <div class="text-blue-700 text-xl">02:55</div>
-                                        <div class="text-slate-600 text-base mt-1">TPE 桃園國際機場</div>
+                                        <div class="text-slate-600 text-base mt-1 flight-airport">TPE 桃園<span class="hidden sm:inline">國際</span>機場</div>
                                     </div>
                                     <i class="fas fa-arrow-right text-blue-500 text-2xl"></i>
                                     <div class="text-center">
                                         <div class="text-blue-700 text-xl">06:25</div>
-                                        <div class="text-slate-600 text-base mt-1">NGO 中部國際機場</div>
+                                        <div class="text-slate-600 text-base mt-1 flight-airport">NGO 中部<span class="hidden sm:inline">國際</span>機場</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3 pt-3 border-t border-blue-200">
                                 <p class="font-medium text-slate-700 mb-3">行李資訊：</p>
                                 <div class="overflow-x-auto">
-                                    <table class="w-full text-sm border-collapse">
+                                    <table class="bag-table w-full text-sm border-collapse">
                                         <thead>
                                             <tr class="bg-blue-100">
                                                 <th class="border border-blue-200 px-3 py-2 text-left font-semibold text-blue-800">行李類型</th>
@@ -200,19 +211,19 @@
                                 <div class="flex items-center justify-center gap-3 text-lg font-bold">
                                     <div class="text-center">
                                         <div class="text-amber-700 text-xl">22:55</div>
-                                        <div class="text-slate-600 text-base mt-1">NGO 中部國際機場</div>
+                                        <div class="text-slate-600 text-base mt-1 flight-airport">NGO 中部<span class="hidden sm:inline">國際</span>機場</div>
                                     </div>
                                     <i class="fas fa-arrow-right text-amber-500 text-2xl"></i>
                                     <div class="text-center">
                                         <div class="text-amber-700 text-xl">01:30<sup>+1</sup></div>
-                                        <div class="text-slate-600 text-base mt-1">TPE 桃園國際機場</div>
+                                        <div class="text-slate-600 text-base mt-1 flight-airport">TPE 桃園<span class="hidden sm:inline">國際</span>機場</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3 pt-3 border-t border-amber-200">
                                 <p class="font-medium text-slate-700 mb-3">行李資訊：</p>
                                 <div class="overflow-x-auto">
-                                    <table class="w-full text-sm border-collapse">
+                                    <table class="bag-table w-full text-sm border-collapse">
                                         <thead>
                                             <tr class="bg-amber-100">
                                                 <th class="border border-amber-200 px-3 py-2 text-left font-semibold text-amber-800">行李類型</th>
@@ -329,26 +340,26 @@
                                 <input type="number" id="qp-jpy" min="0" step="100" inputmode="numeric" value="3000" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3 text-sm">
+                        <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3 text-sm">
                             <label class="flex flex-col gap-1">
                                 <span class="font-medium text-slate-700">玉山刷卡</span>
-                                <input type="number" id="qp-rate-e" min="0" step="0.0001" inputmode="decimal" value="0.2" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
+                                <input type="number" id="qp-rate-e" min="0" step="0.0001" inputmode="decimal" value="0.2" class="w-full min-w-0 px-2 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                             <label class="flex flex-col gap-1">
                                 <span class="font-medium text-slate-700">台新刷卡</span>
-                                <input type="number" id="qp-rate-t" min="0" step="0.0001" inputmode="decimal" value="0.2" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
+                                <input type="number" id="qp-rate-t" min="0" step="0.0001" inputmode="decimal" value="0.2" class="w-full min-w-0 px-2 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                             <label class="flex flex-col gap-1">
                                 <span class="font-medium text-slate-700">玉山PayPay</span>
-                                <input type="number" id="qp-rate-pe" min="0" step="0.0001" inputmode="decimal" value="0.2044" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
+                                <input type="number" id="qp-rate-pe" min="0" step="0.0001" inputmode="decimal" value="0.2044" class="w-full min-w-0 px-2 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                             <label class="flex flex-col gap-1">
                                 <span class="font-medium text-slate-700">台新PayPay</span>
-                                <input type="number" id="qp-rate-pt" min="0" step="0.0001" inputmode="decimal" value="0.2061" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
+                                <input type="number" id="qp-rate-pt" min="0" step="0.0001" inputmode="decimal" value="0.2061" class="w-full min-w-0 px-2 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                             <label class="flex flex-col gap-1">
                                 <span class="font-medium text-slate-700">日幣現鈔</span>
-                                <input type="number" id="qp-rate-c" min="0" step="0.0001" inputmode="decimal" value="0.2015" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
+                                <input type="number" id="qp-rate-c" min="0" step="0.0001" inputmode="decimal" value="0.2015" class="w-full min-w-0 px-2 py-2 rounded-lg border border-slate-300 bg-white" oninput="quickPick()">
                             </label>
                         </div>
                         <!-- <p class="text-xs text-slate-500 -mt-1 mb-3"><i class="fas fa-link mr-1"></i>這 5 個匯率會同步到下方的「熊本熊回饋試算」「兩銀行比較」「PayPay 比較」，改任何一處，其他自動跟著變；匯率會記住上次輸入（存在這個瀏覽器）。<button type="button" onclick="resetRates()" class="underline text-rose-700 ml-1">恢復預設匯率</button></p> -->
@@ -359,49 +370,65 @@
                             <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="qp-jcb" checked onchange="quickPick()"> JCB 10%</label>
                         </div>
                         <div class="bg-white rounded-xl p-4 border border-rose-100 text-sm space-y-3">
-                            <div id="qp-badge" class="rounded-lg px-4 py-3 text-base font-bold text-white">—</div>
+                            <div id="qp-badge" class="rounded-lg px-3 py-2 text-base font-bold text-white">—</div>
                             <p id="qp-why" class="text-slate-700"></p>
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm border-collapse min-w-[320px]">
-                                    <thead><tr class="bg-rose-100 text-rose-900"><th class="border border-rose-200 px-3 py-2 text-left">方式</th><th class="border border-rose-200 px-3 py-2 text-right">台幣花費</th><th class="border border-rose-200 px-3 py-2 text-right">省NT$</th></tr></thead>
+                                <table class="w-full text-sm border-collapse">
+                                    <thead><tr class="bg-rose-100 text-rose-900"><th class="border border-rose-200 px-2 py-1.5 text-left">方式</th><th class="border border-rose-200 px-2 py-1.5 text-right">台幣花費</th><th class="border border-rose-200 px-2 py-1.5 text-right">省NT$</th></tr></thead>
                                     <tbody id="qp-table"></tbody>
                                 </table>
                             </div>
                             <ul id="qp-remind" class="space-y-1 text-xs"></ul>
                         <div class="rounded-lg border border-rose-200 bg-rose-50 p-3 space-y-3">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <span class="font-bold text-rose-800"><i class="fas fa-gauge-high mr-1"></i> 回饋額度追蹤：已經拿了多少？</span>
-                                <span class="flex flex-wrap items-center gap-2 text-sm">
-                                    <select id="qp-used" class="px-2 py-1 rounded-lg border border-slate-300 bg-white text-sm"></select>
-                                    <button type="button" onclick="qpLog()" class="px-3 py-1 rounded-lg bg-rose-600 text-white font-bold text-sm">記錄這一筆</button>
-                                    <button type="button" onclick="qpReset()" class="px-3 py-1 rounded-lg border border-slate-300 bg-white text-sm">歸零</button>
-                                </span>
+                            <div class="font-bold text-rose-800 text-sm"><i class="fas fa-gauge-high mr-1"></i> 回饋額度追蹤</div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <select id="qp-used" class="min-w-0 flex-1 px-2 py-1 rounded-lg border border-slate-300 bg-white text-sm"></select>
+                                <button type="button" onclick="qpLog()" class="px-3 py-1 rounded-lg bg-rose-600 text-white font-bold text-sm whitespace-nowrap">記錄這筆</button>
+                                <button type="button" onclick="qpReset()" class="px-3 py-1 rounded-lg border border-slate-300 bg-white text-sm whitespace-nowrap">歸零</button>
                             </div>
-                            <p class="text-xs text-slate-600">每刷一筆，選你實際用的付款方式再按「記錄這一筆」，額度會自動累計，上面的建議也會跟著變（到頂就改刷別張）。也可以直接改下面的數字；資料只存在這支手機（這個瀏覽器）裡。</p>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 items-center text-sm">
-                                <div class="font-medium text-slate-700">玉山 6% 加碼（上限 NT$500／期，所有指定店共用）</div>
-                                <div class="flex items-center gap-1"><span class="text-xs text-slate-500">已拿 NT$</span><input type="number" id="qp-u-e6" min="0" step="1" inputmode="decimal" class="w-24 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"></div>
-                                <div class="col-span-2"><div class="h-2 rounded bg-slate-200 overflow-hidden"><div id="qp-b-e6" class="h-2" style="width:0%"></div></div><div id="qp-r-e6" class="text-xs text-slate-500 mt-0.5"></div></div>
+                            <p class="text-xs text-slate-600">刷完選實際付款方式，按「記錄這筆」自動累計；數字也可直接改（只存在這個瀏覽器）。</p>
+                            <div class="text-sm">
+                                <div class="flex items-baseline justify-between gap-2"><span class="font-medium text-slate-700">玉山 6%</span><span class="text-xs text-slate-500 whitespace-nowrap">上限 NT$500／期</span></div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="h-2 flex-1 rounded bg-slate-200 overflow-hidden"><div id="qp-b-e6" class="h-2" style="width:0%"></div></div>
+                                    <span class="text-xs text-slate-500 whitespace-nowrap">已拿 NT$</span>
+                                    <input type="number" id="qp-u-e6" min="0" step="1" inputmode="decimal" class="w-20 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()">
+                                </div>
+                                <div id="qp-r-e6" class="text-xs text-slate-500 mt-0.5"></div>
                             </div>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 items-center text-sm">
-                                <div class="font-medium text-slate-700">玉山名古屋 +1.5%（上限 NT$500）</div>
-                                <div class="flex items-center gap-1"><span class="text-xs text-slate-500">已拿 NT$</span><input type="number" id="qp-u-ng" min="0" step="1" inputmode="decimal" class="w-24 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"></div>
-                                <div class="col-span-2"><div class="h-2 rounded bg-slate-200 overflow-hidden"><div id="qp-b-ng" class="h-2" style="width:0%"></div></div><div id="qp-r-ng" class="text-xs text-slate-500 mt-0.5"></div><div class="flex items-center gap-1 mt-1"><span class="text-xs text-slate-500">名古屋指定店累積消費 NT$</span><input type="number" id="qp-u-ngs" min="0" step="1" inputmode="decimal" class="w-24 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"><span id="qp-r-ngs" class="text-xs text-slate-500"></span></div></div>
+                            <div class="text-sm">
+                                <div class="flex items-baseline justify-between gap-2"><span class="font-medium text-slate-700">名古屋 +1.5%</span><span class="text-xs text-slate-500 whitespace-nowrap">上限 NT$500</span></div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="h-2 flex-1 rounded bg-slate-200 overflow-hidden"><div id="qp-b-ng" class="h-2" style="width:0%"></div></div>
+                                    <span class="text-xs text-slate-500 whitespace-nowrap">已拿 NT$</span>
+                                    <input type="number" id="qp-u-ng" min="0" step="1" inputmode="decimal" class="w-20 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()">
+                                </div>
+                                <div id="qp-r-ng" class="text-xs text-slate-500 mt-0.5"></div>
+                                <div class="flex items-center justify-between gap-2 mt-1"><span class="text-xs text-slate-500 whitespace-nowrap">累積消費 NT$</span><input type="number" id="qp-u-ngs" min="0" step="1" inputmode="decimal" class="w-20 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"></div><div id="qp-r-ngs" class="text-xs text-slate-500 mt-0.5"></div>
                             </div>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 items-center text-sm">
-                                <div class="font-medium text-slate-700">JCB 指定店家 10%（上限 ¥2,000／階段）</div>
-                                <div class="flex items-center gap-1"><span class="text-xs text-slate-500">已拿 ¥</span><input type="number" id="qp-u-jcb" min="0" step="1" inputmode="decimal" class="w-24 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"></div>
-                                <div class="col-span-2"><div class="h-2 rounded bg-slate-200 overflow-hidden"><div id="qp-b-jcb" class="h-2" style="width:0%"></div></div><div id="qp-r-jcb" class="text-xs text-slate-500 mt-0.5"></div></div>
+                            <div class="text-sm">
+                                <div class="flex items-baseline justify-between gap-2"><span class="font-medium text-slate-700">JCB 10%</span><span class="text-xs text-slate-500 whitespace-nowrap">上限 ¥2,000／階段</span></div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="h-2 flex-1 rounded bg-slate-200 overflow-hidden"><div id="qp-b-jcb" class="h-2" style="width:0%"></div></div>
+                                    <span class="text-xs text-slate-500 whitespace-nowrap">已拿 ¥</span>
+                                    <input type="number" id="qp-u-jcb" min="0" step="1" inputmode="decimal" class="w-20 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()">
+                                </div>
+                                <div id="qp-r-jcb" class="text-xs text-slate-500 mt-0.5"></div>
                             </div>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 items-center text-sm">
-                                <div class="font-medium text-slate-700">玉山 Wallet PayPay 3.5%（上限 NT$100／季）</div>
-                                <div class="flex items-center gap-1"><span class="text-xs text-slate-500">已拿 NT$</span><input type="number" id="qp-u-pp" min="0" step="1" inputmode="decimal" class="w-24 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()"></div>
-                                <div class="col-span-2"><div class="h-2 rounded bg-slate-200 overflow-hidden"><div id="qp-b-pp" class="h-2" style="width:0%"></div></div><div id="qp-r-pp" class="text-xs text-slate-500 mt-0.5"></div></div>
+                            <div class="text-sm">
+                                <div class="flex items-baseline justify-between gap-2"><span class="font-medium text-slate-700">玉山 PayPay</span><span class="text-xs text-slate-500 whitespace-nowrap">上限 NT$100／季</span></div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="h-2 flex-1 rounded bg-slate-200 overflow-hidden"><div id="qp-b-pp" class="h-2" style="width:0%"></div></div>
+                                    <span class="text-xs text-slate-500 whitespace-nowrap">已拿 NT$</span>
+                                    <input type="number" id="qp-u-pp" min="0" step="1" inputmode="decimal" class="w-20 px-2 py-1 rounded border border-slate-300 bg-white text-right" oninput="qpReadCaps()">
+                                </div>
+                                <div id="qp-r-pp" class="text-xs text-slate-500 mt-0.5"></div>
                             </div>
-                            <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-                                <div class="font-medium text-slate-700">台新 Mastercard 唐吉訶德 ¥1,000（每卡 1 次）</div>
-                                <label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" id="qp-u-mtr" onchange="qpReadCaps()"> 已用掉　<span id="qp-r-mtr" class="text-xs text-slate-500"></span></label>
+                            <div class="flex items-center justify-between gap-2 text-sm">
+                                <span class="font-medium text-slate-700">唐吉訶德 ¥1,000</span>
+                                <label class="inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"><input type="checkbox" id="qp-u-mtr" onchange="qpReadCaps()"> 已用掉</label>
                             </div>
+                            <div id="qp-r-mtr" class="text-xs text-slate-500 -mt-2"></div>
                         </div>
                             <p class="text-xs text-slate-500">實際花費＝日圓×匯率 + 1.5% 國外手續費 − 回饋（PayPay 免手續費；現鈔＝日圓×現鈔匯率，沒有回饋）。以單筆計算，玉山 6% 每期上限 NT$500、JCB 每階段 ¥2,000 是跨筆累計，用完請改台新。匯率分開填：刷卡看國際組織的匯率（玉山＝JCB、台新＝Mastercard），PayPay 用各銀行自己的現金匯率；預設值是頁面試算工具的數字，請依實際牌價調整；實際回饋以帳單為準。</p>
                         </div>
@@ -413,7 +440,7 @@
                             <i class="fas fa-table mr-2"></i> 什麼時候刷哪張？（速查）
                         </h4>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse min-w-[280px]">
+                            <table class="stack-sm w-full text-sm border-collapse min-w-[280px]">
                                 <thead>
                                     <tr class="bg-violet-100">
                                         <th class="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-800">情境</th>
@@ -458,7 +485,7 @@
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
                         <h4 class="font-bold text-amber-800 mb-3 flex items-center"><i class="fas fa-gift mr-2"></i> 本趟可用的活動（10/29–11/2）</h4>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse min-w-[520px]">
+                            <table class="stack-sm w-full text-sm border-collapse min-w-[520px]">
                                 <thead>
                                     <tr class="bg-amber-100">
                                         <th class="border border-amber-200 px-3 py-2 text-left font-semibold text-amber-800">卡</th>
@@ -482,7 +509,7 @@
                     <div class="bg-violet-50 p-4 rounded-xl border border-violet-100">
                         <h4 class="font-bold text-violet-800 mb-3 flex items-center"><i class="fas fa-map-location-dot mr-2"></i> 行程中各店用哪張卡</h4>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse min-w-[360px]">
+                            <table class="stack-sm w-full text-sm border-collapse min-w-[360px]">
                                 <thead><tr class="bg-violet-100"><th class="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-800">天</th><th class="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-800">店家</th><th class="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-800">建議</th></tr></thead>
                                 <tbody class="text-slate-700 align-top"><tr><td class="border border-violet-200 px-3 py-2">Day 1</td><td class="border border-violet-200 px-3 py-2">榮商圈（松坂屋、PARCO）</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（名古屋 +1.5%）</td></tr>
                                     <tr><td class="border border-violet-200 px-3 py-2">Day 1</td><td class="border border-violet-200 px-3 py-2">UNIQLO 榮</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（玉山 6% 指定店；帳單要顯示 UNIQLO，設在百貨、商場內可能不計）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 1</td><td class="border border-violet-200 px-3 py-2">矢場とん</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（JCB 指定店家）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 2</td><td class="border border-violet-200 px-3 py-2">御在所、名花之里</td><td class="border border-violet-200 px-3 py-2">能用 PayPay 就用台新 Pay+（3.8%）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 3</td><td class="border border-violet-200 px-3 py-2">Komeda、山本屋</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（JCB 指定店家）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 3</td><td class="border border-violet-200 px-3 py-2">唐吉訶德</td><td class="border border-violet-200 px-3 py-2">¥19,000 以下全刷台新 Mastercard（¥1,000 + 3.3%）；更多則一筆約 ¥10,500 刷台新、其餘刷玉山（唐吉訶德是玉山 6% 指定店）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 3</td><td class="border border-violet-200 px-3 py-2">榮、大須其他購物</td><td class="border border-violet-200 px-3 py-2">指定店用玉山 JCB；小額且能用 PayPay 就用台新 Pay+</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 4</td><td class="border border-violet-200 px-3 py-2">世界の山ちゃん</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（JCB 指定店家）</td></tr><tr><td class="border border-violet-200 px-3 py-2">Day 5</td><td class="border border-violet-200 px-3 py-2">金シャチ横丁</td><td class="border border-violet-200 px-3 py-2">玉山 JCB（JCB 指定店家）</td></tr></tbody>
@@ -496,7 +523,7 @@
                         <h4 class="font-bold text-emerald-800 mb-2 flex items-center"><i class="fas fa-store mr-2"></i> 玉山 6% 指定商店名單（官方，2026/7/1–12/31）</h4>
                         <p class="text-xs text-slate-600 mb-3">2.5% 一般回饋 + <b>加碼 6%</b>（每歸戶每期上限 NT$500）；<b class="text-red-700">需先登錄</b>。綠色是這趟行程可能用到的店。</p>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm border-collapse min-w-[360px]">
+                            <table class="stack-sm w-full text-sm border-collapse min-w-[360px]">
                                 <thead><tr class="bg-emerald-100"><th class="border border-emerald-200 px-3 py-2 text-left font-semibold text-emerald-800">類別</th><th class="border border-emerald-200 px-3 py-2 text-left font-semibold text-emerald-800">店家</th></tr></thead>
                                 <tbody class="text-slate-700 align-top"><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">交通 IC 卡儲值</td><td class="border border-emerald-200 px-3 py-2"><span class="text-emerald-700 font-medium">SUICA</span>、PASMO、ICOCA</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">自駕租車</td><td class="border border-emerald-200 px-3 py-2">TOYOTA Rent a Car、Times Car Rental、NIPPON RENT-A-CAR、OTS 租車、ORIX 租車、Budget 租車</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">鐵路購票／航空訂票</td><td class="border border-emerald-200 px-3 py-2">JR 鐵路公司／日本航空</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">住宿預訂</td><td class="border border-emerald-200 px-3 py-2">樂天旅遊、東橫 INN、星野集團、Prince Hotel</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">樂園</td><td class="border border-emerald-200 px-3 py-2">東京迪士尼樂園、東京華納兄弟哈利波特影城、日本環球影城、豪斯登堡、九州非洲獅樂園、名古屋樂高樂園、吉伊卡哇樂園</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">燒肉</td><td class="border border-emerald-200 px-3 py-2">勝烈亭、敘敘苑、牛角、力丸燒肉、六歌仙燒肉</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">其他美食</td><td class="border border-emerald-200 px-3 py-2">Shake Shack（漢堡）、DOUTOR Coffee、Fuglen（咖啡）、鳥貴族（居酒屋）、一蘭拉麵、松屋、SUKIYA、壽司郎、藏壽司、人形町今半（壽喜燒）</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">家電</td><td class="border border-emerald-200 px-3 py-2"><span class="text-emerald-700 font-medium">BicCamera</span>、Yodobashi</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">藥妝</td><td class="border border-emerald-200 px-3 py-2"><span class="text-emerald-700 font-medium">松本清</span>、<span class="text-emerald-700 font-medium">唐吉軻德（唐吉訶德）</span>、大國藥妝</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">生活雜貨</td><td class="border border-emerald-200 px-3 py-2"><span class="text-emerald-700 font-medium">無印良品</span></td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">購物商城</td><td class="border border-emerald-200 px-3 py-2">日本 MITSUI、LaLaport 購物園區</td></tr><tr><td class="border border-emerald-200 px-3 py-2 font-medium whitespace-nowrap">服飾</td><td class="border border-emerald-200 px-3 py-2"><span class="text-emerald-700 font-medium">UNIQLO</span>、GU、Montbell、Alpen</td></tr></tbody>
                             </table>
@@ -1551,7 +1578,7 @@
             });
             const ngs = document.getElementById('qp-r-ngs');
             const need = Math.max(0, QP_CAP.ngMin - qpState.ngs);
-            ngs.textContent = need > 0 ? '還差 NT$ ' + Math.round(need).toLocaleString('zh-TW') + '（要滿 NT$ 10,000 才算）' : '已滿 NT$ 10,000';
+            ngs.textContent = need > 0 ? '還差 NT$ ' + Math.round(need).toLocaleString('zh-TW') + ' 滿 1 萬' : '已滿 1 萬';
             ngs.style.color = need > 0 ? '' : '#0f766e';
             const mtr = document.getElementById('qp-r-mtr');
             mtr.textContent = qpState.mtr ? '已用掉' : '還可以用 1 次';
@@ -1620,19 +1647,19 @@
             {
                 const esun = qpEsun(st, jpy, rE, opt, rem);
                 const tai = qpTaishin(st, jpy, rT);
-                opts.push({ id: 'esun', label: '玉山直刷', cost: esun.cost, why: esun.parts.join(' + '), color: '#0f766e', badge: '刷：玉山熊本熊（JCB）', comp: esun.comp });
-                opts.push({ id: 'tai', label: '台新直刷', cost: tai.cost, why: tai.parts.join(' + '), color: '#1d4ed8', badge: '刷：台新 Mastercard（玩旅刷）', comp: tai.comp });
+                opts.push({ id: 'esun', label: '玉山直刷', cost: esun.cost, why: esun.parts.join(' + '), color: '#0f766e', badge: '刷：玉山 JCB', comp: esun.comp });
+                opts.push({ id: 'tai', label: '台新直刷', cost: tai.cost, why: tai.parts.join(' + '), color: '#1d4ed8', badge: '刷：台新 Mastercard', comp: tai.comp });
                 if (st.mtr && jpy > 10500 && !qpState.mtr) {
                     const a = qpTaishin(st, 10500, rT);
                     const b = qpEsun(st, jpy - 10500, rE, opt, rem);
-                    opts.push({ id: 'split', label: '分兩筆：¥10,500 刷台新 + 其餘刷玉山', cost: a.cost + b.cost, why: '台新那筆拿 ¥1,000，其餘拿玉山 2.5% + 6%（要店員同意分開結帳）', color: '#7c3aed', badge: '分兩筆：¥10,500 刷台新，其餘刷玉山', comp: Object.assign({}, b.comp, a.comp) });
+                    opts.push({ id: 'split', label: '分兩筆：¥10,500 刷台新 + 其餘刷玉山', cost: a.cost + b.cost, why: '台新那筆拿 ¥1,000，其餘拿玉山 2.5% + 6%（要店員同意分開結帳）', color: '#7c3aed', badge: '分兩筆：¥10,500 台新＋其餘玉山', comp: Object.assign({}, b.comp, a.comp) });
                 }
                 if (paypay) {
                     const twdPT = jpy * rPT;
                     const twdPE = jpy * rPE;
                     const ppE = Math.min(twdPE * 0.035, rem.pp);
-                    opts.push({ id: 'pp-tai', label: '台新PayPay', cost: twdPT - Math.floor(twdPT * 0.038), why: '3.8%，免手續費；拿不到 JCB、Mastercard、指定店活動', color: '#0369a1', badge: '刷：台新 Pay+ → PayPay', comp: {} });
-                    opts.push({ id: 'pp-esun', label: '玉山PayPay', cost: twdPE - ppE, why: rem.pp <= 0 ? '3.5% 回饋本季已到頂，只剩免手續費' : '3.5%，每季上限 NT$100；拿不到 2.5%、6%', color: '#0e7490', badge: '刷：玉山 Wallet → PayPay', comp: { pp: ppE } });
+                    opts.push({ id: 'pp-tai', label: '台新PayPay', cost: twdPT - Math.floor(twdPT * 0.038), why: '3.8%，免手續費；拿不到 JCB、Mastercard、指定店活動', color: '#0369a1', badge: '刷：台新 PayPay', comp: {} });
+                    opts.push({ id: 'pp-esun', label: '玉山PayPay', cost: twdPE - ppE, why: rem.pp <= 0 ? '3.5% 回饋本季已到頂，只剩免手續費' : '3.5%，每季上限 NT$100；拿不到 2.5%、6%', color: '#0e7490', badge: '刷：玉山 PayPay', comp: { pp: ppE } });
                 }
             }
             let best = opts[0];
@@ -1646,7 +1673,7 @@
             badge.textContent = jpy > 0 ? best.badge : '請先輸入金額';
             document.getElementById('qp-why').textContent = jpy > 0 ? best.why + (best.id === 'cash' ? '。' : '，比付現金省約 ' + fmt(save(best)) + '（' + pct(best) + '）。') : '';
             const tbody = document.getElementById('qp-table');
-            tbody.innerHTML = opts.slice().sort((x, y) => x.cost - y.cost).map(o => '<tr class="' + (o === best ? 'bg-rose-50 font-bold' : '') + '"><td class="border border-rose-200 px-3 py-2">' + o.label + (o === best ? '　✅' : '') + '</td><td class="border border-rose-200 px-3 py-2 text-right font-mono">' + fmt(o.cost) + '</td><td class="border border-rose-200 px-3 py-2 text-right font-mono">' + (o.id === 'cash' ? '—' : (save(o) >= 0 ? '省 ' : '多 ') + Math.round(Math.abs(save(o))).toLocaleString('zh-TW')) + '</td></tr>').join('');
+            tbody.innerHTML = opts.slice().sort((x, y) => x.cost - y.cost).map(o => '<tr class="' + (o === best ? 'bg-rose-50 font-bold' : '') + '"><td class="border border-rose-200 px-2 py-1.5">' + o.label + (o === best ? '　✅' : '') + '</td><td class="border border-rose-200 px-2 py-1.5 text-right font-mono">' + fmt(o.cost) + '</td><td class="border border-rose-200 px-2 py-1.5 text-right font-mono">' + (o.id === 'cash' ? '—' : (save(o) >= 0 ? '省 ' : '多 ') + Math.round(Math.abs(save(o))).toLocaleString('zh-TW')) + '</td></tr>').join('');
 
             const sel = document.getElementById('qp-used');
             const prev = sel.value;
