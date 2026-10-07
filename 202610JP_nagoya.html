@@ -335,6 +335,7 @@
                                         <option value="komeda">Komeda 珈琲</option>
                                         <option value="yamamotoya">山本屋</option>
                                         <option value="yamachan">世界の山ちゃん</option>
+                                        <option value="kaburaya">KABURAYA</option>
                                         <option value="kinshachi">金シャチ横丁</option>
                                         <option value="tvtower">名古屋電視塔</option>
                                         <option value="meitetsu">名鐵商店</option>
@@ -1532,6 +1533,7 @@
             komeda: { n: 'Komeda 珈琲', j: 1 },
             yamamotoya: { n: '山本屋', j: 1 },
             yamachan: { n: '世界の山ちゃん', j: 1 },
+            kaburaya: { n: 'KABURAYA', j: 1 },
             kinshachi: { n: '金シャチ横丁', j: 1 },
             tvtower: { n: '名古屋電視塔', j: 1 },
             meitetsu: { n: '名鐵商店', j: 1 },
@@ -1541,7 +1543,7 @@
         const QP_KEY = 'nagoya_qp_caps_v1';         // 起始值：出發前已經用掉的額度
         const QP_CACHE_KEY = 'nagoya_qp_cache_v2';   // 記帳本紀錄的本機快取＋還沒送出的草稿
         const QP_CAP = { e6: 500, ng: 500, ngMin: 10000, jcb: 2000, pp: 100 };
-        const QP_CAT = { donq: 'shopping', uniqlo: 'shopping', matsu: 'shopping', bic: 'shopping', muji: 'shopping', suica: 'transport', matsuzaka: 'shopping', parco: 'shopping', takashimaya: 'shopping', sugi: 'shopping', yabaton: 'food', komeda: 'food', yamamotoya: 'food', yamachan: 'food', kinshachi: 'food', tvtower: 'other', meitetsu: 'shopping', other: 'other' };
+        const QP_CAT = { donq: 'shopping', uniqlo: 'shopping', matsu: 'shopping', bic: 'shopping', muji: 'shopping', suica: 'transport', matsuzaka: 'shopping', parco: 'shopping', takashimaya: 'shopping', sugi: 'shopping', yabaton: 'food', komeda: 'food', yamamotoya: 'food', yamachan: 'food', kaburaya: 'food', kinshachi: 'food', tvtower: 'other', meitetsu: 'shopping', other: 'other' };
         const QP_PAY = { cash: '現金', paypay_esun: '玉山 PayPay', paypay_taishin: '台新 PayPay', card_esun: '玉山卡', card_taishin: '台新卡' };
         let qpState = { e6: 0, ng: 0, ngs: 0, jcb: 0, pp: 0, mtr: false };   // 起始值（手動填）
         let qpCur = { e6: 0, ng: 0, ngs: 0, jcb: 0, pp: 0, mtr: false };     // 起始值＋記帳紀錄累計
