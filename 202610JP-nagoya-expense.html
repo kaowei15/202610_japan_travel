@@ -245,6 +245,35 @@
                         <input type="number" id="expenseFee" readonly class="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-600">
                     </div>
                     <div class="col-span-2 md:col-span-1">
+                        <label class="text-xs text-slate-500">活動店家（選填，刷卡回饋追蹤用）</label>
+                        <select id="expenseStore" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">無／一般店家</option>
+                            <optgroup label="玉山 6% 指定店">
+                                <option value="donq">唐吉訶德</option>
+                                <option value="uniqlo">UNIQLO</option>
+                                <option value="matsu">松本清</option>
+                                <option value="bic">BicCamera</option>
+                                <option value="muji">無印良品</option>
+                                <option value="suica">Suica 儲值</option>
+                            </optgroup>
+                            <optgroup label="玉山名古屋 +1.5%">
+                                <option value="matsuzaka">松坂屋名古屋店</option>
+                                <option value="parco">名古屋 PARCO</option>
+                                <option value="takashimaya">JR 名古屋高島屋</option>
+                                <option value="sugi">SUGI 藥局</option>
+                            </optgroup>
+                            <optgroup label="JCB 指定人氣店家">
+                                <option value="yabaton">矢場とん</option>
+                                <option value="komeda">Komeda 珈琲</option>
+                                <option value="yamamotoya">山本屋</option>
+                                <option value="yamachan">世界の山ちゃん</option>
+                                <option value="kinshachi">金シャチ横丁</option>
+                                <option value="tvtower">名古屋電視塔</option>
+                                <option value="meitetsu">名鐵商店</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
                         <label class="text-xs text-slate-500">商品名稱</label>
                         <input type="text" id="expenseItem" placeholder="商品..." class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
@@ -448,6 +477,35 @@
                     <input type="number" id="modalExpenseFee" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-600">
                 </div>
                 <div>
+                    <label class="text-xs text-slate-500">活動店家（選填，刷卡回饋追蹤用）</label>
+                    <select id="modalExpenseStore" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">無／一般店家</option>
+                            <optgroup label="玉山 6% 指定店">
+                                <option value="donq">唐吉訶德</option>
+                                <option value="uniqlo">UNIQLO</option>
+                                <option value="matsu">松本清</option>
+                                <option value="bic">BicCamera</option>
+                                <option value="muji">無印良品</option>
+                                <option value="suica">Suica 儲值</option>
+                            </optgroup>
+                            <optgroup label="玉山名古屋 +1.5%">
+                                <option value="matsuzaka">松坂屋名古屋店</option>
+                                <option value="parco">名古屋 PARCO</option>
+                                <option value="takashimaya">JR 名古屋高島屋</option>
+                                <option value="sugi">SUGI 藥局</option>
+                            </optgroup>
+                            <optgroup label="JCB 指定人氣店家">
+                                <option value="yabaton">矢場とん</option>
+                                <option value="komeda">Komeda 珈琲</option>
+                                <option value="yamamotoya">山本屋</option>
+                                <option value="yamachan">世界の山ちゃん</option>
+                                <option value="kinshachi">金シャチ横丁</option>
+                                <option value="tvtower">名古屋電視塔</option>
+                                <option value="meitetsu">名鐵商店</option>
+                            </optgroup>
+                    </select>
+                </div>
+                <div>
                     <label class="text-xs text-slate-500">商品名稱</label>
                     <input type="text" id="modalExpenseItem" placeholder="商品..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
@@ -527,7 +585,7 @@
     <script>
         // Firebase 初始化（使用與代購清單相同的資料庫）
         firebase.initializeApp({
-            databaseURL: "https://jp-9c9f8-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            databaseURL: "https://jp-26e06-default-rtdb.asia-southeast1.firebasedatabase.app/"
         });
         const db = firebase.database();
         const expensesRef = db.ref('expenses_nagoya');
@@ -563,6 +621,7 @@
             const item = document.getElementById('expenseItem').value;
             const payment = document.getElementById('expensePayment').value;
             const note = document.getElementById('expenseNote').value;
+            const store = document.getElementById('expenseStore').value;
 
             if (!date || amount <= 0) {
                 alert('請填寫日期和金額');
@@ -570,8 +629,11 @@
             }
 
             setSyncStatus('syncing', '同步中...');
-            expensesRef.push({ date, category, amount, currency, fee, item, payment, note, createdAt: Date.now() })
+            const rec = { date, category, amount, currency, fee, item, payment, note, createdAt: Date.now() };
+            if (store) rec.store = store;
+            expensesRef.push(rec)
                 .then(() => {
+                    document.getElementById('expenseStore').value = '';
                     document.getElementById('expenseAmount').value = '';
                     document.getElementById('expenseFee').value = '';
                     document.getElementById('expenseItem').value = '';
@@ -689,6 +751,7 @@
                 document.getElementById('modalExpenseItem').value = data.item || '';
                 document.getElementById('modalExpensePayment').value = data.payment || 'cash';
                 document.getElementById('modalExpenseNote').value = data.note || '';
+                document.getElementById('modalExpenseStore').value = data.store || '';
                 
                 updateModalPaymentFields();
                 // 重新載入手續費（如果是刷卡的話）
@@ -717,6 +780,7 @@
             const item = document.getElementById('modalExpenseItem').value;
             const payment = document.getElementById('modalExpensePayment').value;
             const note = document.getElementById('modalExpenseNote').value;
+            const store = document.getElementById('modalExpenseStore').value;
 
             if (!date || amount <= 0) {
                 alert('請填寫日期和金額');
@@ -724,11 +788,35 @@
             }
 
             setSyncStatus('syncing', '同步中...');
-            expensesRef.child(key).update({ date, category, amount, currency, fee, item, payment, note })
+            expensesRef.child(key).update({ date, category, amount, currency, fee, item, payment, note, store: store || null, pending: null })
                 .then(() => { closeExpenseModal(); })
                 .catch(err => {
                     setSyncStatus('error', '儲存失敗');
                     alert('儲存失敗：' + err.message);
+                });
+        }
+
+        // 確認速選頁留下的「待確認」草稿
+        function confirmExpense(key) {
+            setSyncStatus('syncing', '同步中...');
+            expensesRef.child(key).update({ pending: null })
+                .catch(err => {
+                    setSyncStatus('error', '確認失敗');
+                    alert('確認失敗：' + err.message);
+                });
+        }
+
+        function confirmAllPending() {
+            const data = currentExpensesData || {};
+            const updates = {};
+            Object.keys(data).forEach(k => { if (data[k].pending) updates[k + '/pending'] = null; });
+            if (Object.keys(updates).length === 0) return;
+            if (!confirm('把全部「待確認」都標成已確認？（品項、分類不會改）')) return;
+            setSyncStatus('syncing', '同步中...');
+            expensesRef.update(updates)
+                .catch(err => {
+                    setSyncStatus('error', '確認失敗');
+                    alert('確認失敗：' + err.message);
                 });
         }
 
@@ -946,6 +1034,13 @@
 
             // 渲染分組列表
             let html = '';
+            const pendingCount = entries.filter(([_, e]) => e.pending).length;
+            if (pendingCount > 0) {
+                html += `<div class="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-2">
+                    <span class="text-sm text-amber-800"><i class="fas fa-hourglass-half mr-1"></i>有 ${pendingCount} 筆速選頁記下來的「待確認」，補上品項、分類後按確認</span>
+                    <button onclick="confirmAllPending()" class="shrink-0 px-3 py-1 rounded-lg bg-amber-500 text-white text-xs font-bold hover:bg-amber-600">全部確認</button>
+                </div>`;
+            }
             for (const date in grouped) {
                 const items = grouped[date];
                 
@@ -1012,7 +1107,7 @@
                             <div class="flex items-center gap-2 flex-1 min-w-0">
                                 <span class="text-2xl w-8 text-center shrink-0">${cat.icon}</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-medium text-slate-700">${itemText}</p>
+                                    <p class="font-medium text-slate-700">${itemText}${e.pending ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-xs font-normal">待確認</span>' : ''}</p>
                                     <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                         ${noteText ? `<span>${noteText}</span><span>·</span>` : ''}
                                         <span class="${pay.class}">${pay.icon} ${pay.name}</span>
@@ -1027,6 +1122,7 @@
                                 <div class="shrink-0 w-[50px] text-right">
                                     <p class="text-sm text-red-500 tabular-nums font-medium">${fee > 0 ? '(+' + fee + ')' : ''}</p>
                                 </div>
+                                ${e.pending ? `<button onclick="event.stopPropagation(); confirmExpense('${e.key}')" class="shrink-0 px-2 py-1 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600" title="直接確認這筆"><i class="fas fa-check"></i></button>` : ''}
                                 <div class="text-blue-400 sm:opacity-0 group-hover:opacity-100 transition w-6 text-center shrink-0">
                                     <i class="fas fa-pen text-sm"></i>
                                 </div>
@@ -1295,7 +1391,7 @@
         });
 
         // ========== 從代購清單導入功能 ==========
-        const shoppingRef = db.ref('shopping_items_nagoya');
+        const shoppingRef = db.ref('shopping_items');
         let pendingImports = [];  // 新品項
         let pendingUpdates = [];  // 有變更的品項
 
