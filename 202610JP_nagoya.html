@@ -965,8 +965,17 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3">
                         <input type="number" id="shop-qty" placeholder="數量" value="1" min="1" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
-                        <input type="text" id="shop-img-url" placeholder="圖片網址（選填）" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <input type="text" id="shop-img-url" placeholder="圖片網址（選填，或用下方選擇照片）" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
                         <input type="text" id="shop-note" placeholder="備註（選填）" class="px-3 py-2 rounded-lg border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                    </div>
+                    <div class="flex items-center gap-2 mb-3 min-w-0">
+                        <input type="file" id="shop-photo" accept="image/*" class="hidden" onchange="pickShopPhoto(this)">
+                        <button type="button" onclick="document.getElementById('shop-photo').click()" class="shrink-0 px-3 py-2 rounded-lg border border-pink-300 bg-white text-pink-700 font-bold text-sm hover:bg-pink-100 transition-all">
+                            <i class="fas fa-camera mr-1"></i> 選擇照片
+                        </button>
+                        <img id="shop-photo-preview" alt="已選照片" class="hidden w-10 h-10 shrink-0 object-cover rounded border border-pink-200">
+                        <span id="shop-photo-name" class="text-xs text-slate-500 truncate min-w-0"></span>
+                        <button type="button" id="shop-photo-clear" onclick="clearShopPhoto()" class="hidden shrink-0 p-1 text-slate-400 hover:text-red-500" title="不用這張照片"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="flex gap-2">
                         <button id="shop-submit-btn" onclick="saveShoppingItem()" class="flex-1 px-5 py-2 bg-pink-600 text-white rounded-lg font-bold text-sm hover:bg-pink-700 transition-all">
@@ -1167,6 +1176,40 @@
             return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
+        // 雲端圖片（img 為 db:鍵值，原圖存在 shopping_images/鍵值）：捲到才下載，下載過就記住不重抓
+        const SHOP_IMG_BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        const shopImgCache = {};
+        const shopImgLoading = {};
+        let shopImgObserver = null;
+
+        function loadDbImage(el) {
+            const k = el.dataset.dbimg;
+            if (shopImgCache[k]) { el.src = shopImgCache[k]; return; }
+            if (!db) return;
+            if (!shopImgLoading[k]) {
+                shopImgLoading[k] = db.ref('shopping_images/' + k).once('value').then((s) => {
+                    const v = s.val();
+                    if (typeof v === 'string' && v.startsWith('data:image/')) shopImgCache[k] = v;
+                    return shopImgCache[k];
+                }).catch(() => { delete shopImgLoading[k]; });
+            }
+            shopImgLoading[k].then((src) => {
+                if (src) document.querySelectorAll(`img[data-dbimg="${k}"]`).forEach((img) => { img.src = src; });
+            });
+        }
+
+        function observeDbImages() {
+            if (shopImgObserver) shopImgObserver.disconnect();
+            const imgs = document.querySelectorAll('img[data-dbimg]');
+            if (!('IntersectionObserver' in window)) { imgs.forEach(loadDbImage); return; }
+            if (!shopImgObserver) {
+                shopImgObserver = new IntersectionObserver((list) => list.forEach((en) => {
+                    if (en.isIntersecting) { shopImgObserver.unobserve(en.target); loadDbImage(en.target); }
+                }), { rootMargin: '300px' });
+            }
+            imgs.forEach((img) => { if (shopImgCache[img.dataset.dbimg]) loadDbImage(img); else shopImgObserver.observe(img); });
+        }
+
         function renderShoppingList(entries) {
             const tbody = document.getElementById('shopping-list-body');
             const cards = document.getElementById('shopping-list-cards');
@@ -1185,12 +1228,16 @@
             sorted.forEach(([key, item]) => {
                 const colorClass = Object.prototype.hasOwnProperty.call(categoryColors, item.category) ? categoryColors[item.category] : categoryColors['其他'];
                 const person = esc(item.person), category = esc(item.category), name = esc(item.item), qty = esc(item.qty), note = esc(item.note);
-                const imgUrl = /^https?:\/\//i.test(String(item.img || '')) ? esc(item.img) : '';
+                // 圖片來源：db:鍵值（雲端原圖）、網址，或同資料夾的相對路徑（例：代購/佩玲_面膜_5.jpg）
+                const imgRaw = String(item.img || '');
+                const dbKey = /^db:[A-Za-z0-9_-]+$/.test(imgRaw) ? imgRaw.slice(3) : '';
+                const imgUrl = dbKey ? SHOP_IMG_BLANK : ((/^https?:\/\//i.test(imgRaw) || /^[^:]+$/.test(imgRaw)) ? esc(imgRaw) : '');
+                const imgAttr = dbKey ? ` data-dbimg="${dbKey}"` : '';
                 const checked = item.checked ? 'checked' : '';
                 const rowClass = item.checked ? 'opacity-40 line-through' : '';
                 const display = (currentFilter === 'all' || item.category === currentFilter) ? '' : 'display:none;';
-                const imgHtml = imgUrl ? `<img src="${imgUrl}" alt="商品圖" onclick="enlargeImg(this, event)" class="w-12 h-12 object-cover rounded border border-slate-200 cursor-pointer">` : '<span class="text-slate-300 text-xs">無圖</span>';
-                const mobileImgHtml = imgUrl ? `<img src="${imgUrl}" alt="商品圖" onclick="enlargeImg(this, event)" class="w-14 h-14 object-cover rounded-md border border-slate-200 cursor-pointer shrink-0">` : '';
+                const imgHtml = imgUrl ? `<img src="${imgUrl}"${imgAttr} alt="商品圖" onclick="enlargeImg(this, event)" class="w-12 h-12 object-cover rounded border border-slate-200 bg-slate-100 cursor-pointer">` : '<span class="text-slate-300 text-xs">無圖</span>';
+                const mobileImgHtml = imgUrl ? `<img src="${imgUrl}"${imgAttr} alt="商品圖" onclick="enlargeImg(this, event)" class="w-14 h-14 object-cover rounded-md border border-slate-200 bg-slate-100 cursor-pointer shrink-0">` : '';
                 const mobileNoteHtml = note ? `<p class="text-xs text-slate-500 mt-0.5 leading-snug break-words">${note}</p>` : '';
 
                 tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 shop-item ${rowClass} cursor-pointer" data-category="${category}" data-key="${key}" style="${display}" onclick="toggleShoppingCheckByRow('${key}', this)">
@@ -1222,6 +1269,7 @@
                 </div>`;
             });
             updateSortHeaders();
+            observeDbImages();
         }
 
         if (itemsRef) itemsRef.on('value', (snapshot) => {
@@ -1239,6 +1287,7 @@
             const note = document.getElementById('shop-note').value.trim();
             const editKey = document.getElementById('shop-edit-key').value;
             if (!person || !item) { alert('請至少填寫委託人和品項名稱'); return; }
+            if (shopPhoto) { saveShoppingWithPhoto({ person, category, item, qty, note }, editKey); return; }
             if (editKey) {
                 itemsRef.child(editKey).update({ person, category, item, qty, img, note });
             } else {
@@ -1247,7 +1296,88 @@
             resetShoppingForm();
         }
 
+        // 表單選的照片：先存成 data URL，按儲存時和品項一起寫進雲端（shopping_images/品項鍵值）
+        const SHOP_PHOTO_MAX = 6 * 1024 * 1024;   // 資料庫單筆上限 10MB，轉成文字會變大約 1.33 倍
+        let shopPhoto = null;
+
+        function pickShopPhoto(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { alert('請選擇圖片檔'); return; }
+            const show = (dataUrl, shrunk) => {
+                shopPhoto = dataUrl;
+                const prev = document.getElementById('shop-photo-preview');
+                prev.src = dataUrl;
+                prev.classList.remove('hidden');
+                document.getElementById('shop-photo-name').textContent = file.name + (shrunk ? '（檔案太大，已縮小）' : '');
+                document.getElementById('shop-photo-clear').classList.remove('hidden');
+            };
+            const reader = new FileReader();
+            reader.onload = () => {
+                if (file.size <= SHOP_PHOTO_MAX) { show(reader.result, false); return; }
+                shrinkShopPhoto(reader.result).then((d) => show(d, true)).catch(() => alert('這張照片太大又無法縮小，請換一張'));
+            };
+            reader.onerror = () => alert('讀取照片失敗');
+            reader.readAsDataURL(file);
+        }
+
+        // 只有超過上限才縮：長邊逐步縮小，直到放得進資料庫
+        function shrinkShopPhoto(dataUrl) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    for (const [edge, q] of [[2560, 0.9], [2048, 0.85], [1600, 0.8]]) {
+                        const s = Math.min(1, edge / Math.max(img.width, img.height));
+                        const c = document.createElement('canvas');
+                        c.width = Math.round(img.width * s);
+                        c.height = Math.round(img.height * s);
+                        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                        const out = c.toDataURL('image/jpeg', q);
+                        if (out.length * 0.75 <= SHOP_PHOTO_MAX) { resolve(out); return; }
+                    }
+                    reject();
+                };
+                img.onerror = reject;
+                img.src = dataUrl;
+            });
+        }
+
+        function clearShopPhoto() {
+            shopPhoto = null;
+            const prev = document.getElementById('shop-photo-preview');
+            prev.removeAttribute('src');
+            prev.classList.add('hidden');
+            document.getElementById('shop-photo-name').textContent = '';
+            document.getElementById('shop-photo-clear').classList.add('hidden');
+        }
+
+        function saveShoppingWithPhoto(fields, editKey) {
+            if (!db) { alert('沒有連上雲端，照片無法上傳'); return; }
+            const key = editKey || itemsRef.push().key;
+            const photo = shopPhoto;
+            const rec = Object.assign({}, fields, { img: 'db:' + key });
+            if (!editKey) Object.assign(rec, { checked: false, createdAt: Date.now() });
+            // 照片和品項一次寫入；編輯時只改這幾個欄位，已購買勾選不受影響
+            const updates = { ['shopping_images/' + key]: photo };
+            Object.keys(rec).forEach((f) => { updates['shopping_items/' + key + '/' + f] = rec[f]; });
+            shopImgCache[key] = photo;
+            delete shopImgLoading[key];
+            const btn = document.getElementById('shop-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 照片上傳中…';
+            db.ref().update(updates).then(() => {
+                document.querySelectorAll(`img[data-dbimg="${key}"]`).forEach((img) => { img.src = photo; });
+                resetShoppingForm();
+            }).catch((err) => {
+                delete shopImgCache[key];
+                alert('上傳失敗：' + err.message);
+                btn.innerHTML = editKey ? '<i class="fas fa-save mr-1"></i> 儲存修改' : '<i class="fas fa-plus mr-1"></i> 新增品項';
+            }).finally(() => { btn.disabled = false; });
+        }
+
         function resetShoppingForm() {
+            clearShopPhoto();
             document.getElementById('shop-edit-key').value = '';
             document.getElementById('shop-person').value = '';
             document.getElementById('shop-category').value = '藥妝';
@@ -1265,6 +1395,7 @@
             itemsRef.child(key).once('value', (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
+                clearShopPhoto();
                 document.getElementById('shop-edit-key').value = key;
                 document.getElementById('shop-person').value = data.person || '';
                 document.getElementById('shop-category').value = data.category || '藥妝';
@@ -1285,7 +1416,12 @@
             const editKey = document.getElementById('shop-edit-key').value;
             if (!editKey) return;
             if (confirm('確定要刪除這個品項嗎？')) {
-                itemsRef.child(editKey).remove().then(() => resetShoppingForm());
+                const entry = shoppingEntries.find(([k]) => k === editKey);
+                const m = /^db:([A-Za-z0-9_-]+)$/.exec(String((entry && entry[1].img) || ''));
+                itemsRef.child(editKey).remove().then(() => {
+                    if (m) db.ref('shopping_images/' + m[1]).remove();   // 雲端原圖一起刪
+                    resetShoppingForm();
+                });
             }
         }
 
@@ -1322,6 +1458,7 @@
         function enlargeImg(img, event) {
             if (event) event.stopPropagation();
             if (!img.src) return;
+            if (img.dataset.dbimg && !shopImgCache[img.dataset.dbimg]) return;   // 雲端圖還沒下載完
             const overlay = document.createElement('div');
             overlay.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4';
             overlay.onclick = () => overlay.remove();
