@@ -248,29 +248,52 @@
                         <label class="text-xs text-slate-500">活動店家（選填，刷卡回饋追蹤用）</label>
                         <select id="expenseStore" class="w-full px-2 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">無／一般店家</option>
-                            <optgroup label="玉山 6% 指定店">
+                            <optgroup label="藥妝／生活雜貨">
                                 <option value="donq">唐吉訶德</option>
-                                <option value="uniqlo">UNIQLO</option>
                                 <option value="matsu">松本清</option>
-                                <option value="bic">BicCamera</option>
+                                <option value="daikoku">大國藥妝</option>
+                                <option value="sugi">SUGI 藥局</option>
                                 <option value="muji">無印良品</option>
-                                <option value="suica">Suica 儲值</option>
                             </optgroup>
-                            <optgroup label="玉山名古屋 +1.5%">
+                            <optgroup label="百貨／購物">
+                                <option value="takashimaya">JR 名古屋高島屋</option>
                                 <option value="matsuzaka">松坂屋名古屋店</option>
                                 <option value="parco">名古屋 PARCO</option>
-                                <option value="takashimaya">JR 名古屋高島屋</option>
-                                <option value="sugi">SUGI 藥局</option>
+                                <option value="meitetsu">名鐵商店（伴手禮）</option>
                             </optgroup>
-                            <optgroup label="JCB 指定人氣店家">
+                            <optgroup label="電器">
+                                <option value="bic">BicCamera</option>
+                                <option value="yodobashi">Yodobashi</option>
+                            </optgroup>
+                            <optgroup label="服飾／戶外">
+                                <option value="uniqlo">UNIQLO</option>
+                                <option value="gu">GU</option>
+                                <option value="montbell">mont-bell</option>
+                                <option value="alpen">Alpen</option>
+                            </optgroup>
+                            <optgroup label="名古屋美食">
                                 <option value="yabaton">矢場とん</option>
-                                <option value="komeda">Komeda 珈琲</option>
                                 <option value="yamamotoya">山本屋</option>
                                 <option value="yamachan">世界の山ちゃん</option>
                                 <option value="kaburaya">KABURAYA</option>
+                                <option value="komeda">Komeda 珈琲</option>
                                 <option value="kinshachi">金シャチ横丁</option>
-                                <option value="tvtower">名古屋電視塔</option>
-                                <option value="meitetsu">名鐵商店</option>
+                            </optgroup>
+                            <optgroup label="連鎖餐廳">
+                                <option value="ichiran">一蘭拉麵</option>
+                                <option value="sushiro">壽司郎</option>
+                                <option value="kura">藏壽司</option>
+                                <option value="torikizoku">鳥貴族</option>
+                                <option value="matsuya">松屋</option>
+                                <option value="sukiya">すき家</option>
+                                <option value="doutor">DOUTOR</option>
+                            </optgroup>
+                            <optgroup label="便利商店／交通">
+                                <option value="seven">7-ELEVEN</option>
+                                <option value="suica">Suica 儲值</option>
+                            </optgroup>
+                            <optgroup label="景點">
+                                <option value="tvtower">名古屋電視塔（MIRAI TOWER）</option>
                             </optgroup>
                         </select>
                     </div>
@@ -481,30 +504,53 @@
                     <label class="text-xs text-slate-500">活動店家（選填，刷卡回饋追蹤用）</label>
                     <select id="modalExpenseStore" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="">無／一般店家</option>
-                            <optgroup label="玉山 6% 指定店">
-                                <option value="donq">唐吉訶德</option>
-                                <option value="uniqlo">UNIQLO</option>
-                                <option value="matsu">松本清</option>
-                                <option value="bic">BicCamera</option>
-                                <option value="muji">無印良品</option>
-                                <option value="suica">Suica 儲值</option>
-                            </optgroup>
-                            <optgroup label="玉山名古屋 +1.5%">
-                                <option value="matsuzaka">松坂屋名古屋店</option>
-                                <option value="parco">名古屋 PARCO</option>
-                                <option value="takashimaya">JR 名古屋高島屋</option>
-                                <option value="sugi">SUGI 藥局</option>
-                            </optgroup>
-                            <optgroup label="JCB 指定人氣店家">
-                                <option value="yabaton">矢場とん</option>
-                                <option value="komeda">Komeda 珈琲</option>
-                                <option value="yamamotoya">山本屋</option>
-                                <option value="yamachan">世界の山ちゃん</option>
-                                <option value="kaburaya">KABURAYA</option>
-                                <option value="kinshachi">金シャチ横丁</option>
-                                <option value="tvtower">名古屋電視塔</option>
-                                <option value="meitetsu">名鐵商店</option>
-                            </optgroup>
+                        <optgroup label="藥妝／生活雜貨">
+                            <option value="donq">唐吉訶德</option>
+                            <option value="matsu">松本清</option>
+                            <option value="daikoku">大國藥妝</option>
+                            <option value="sugi">SUGI 藥局</option>
+                            <option value="muji">無印良品</option>
+                        </optgroup>
+                        <optgroup label="百貨／購物">
+                            <option value="takashimaya">JR 名古屋高島屋</option>
+                            <option value="matsuzaka">松坂屋名古屋店</option>
+                            <option value="parco">名古屋 PARCO</option>
+                            <option value="meitetsu">名鐵商店（伴手禮）</option>
+                        </optgroup>
+                        <optgroup label="電器">
+                            <option value="bic">BicCamera</option>
+                            <option value="yodobashi">Yodobashi</option>
+                        </optgroup>
+                        <optgroup label="服飾／戶外">
+                            <option value="uniqlo">UNIQLO</option>
+                            <option value="gu">GU</option>
+                            <option value="montbell">mont-bell</option>
+                            <option value="alpen">Alpen</option>
+                        </optgroup>
+                        <optgroup label="名古屋美食">
+                            <option value="yabaton">矢場とん</option>
+                            <option value="yamamotoya">山本屋</option>
+                            <option value="yamachan">世界の山ちゃん</option>
+                            <option value="kaburaya">KABURAYA</option>
+                            <option value="komeda">Komeda 珈琲</option>
+                            <option value="kinshachi">金シャチ横丁</option>
+                        </optgroup>
+                        <optgroup label="連鎖餐廳">
+                            <option value="ichiran">一蘭拉麵</option>
+                            <option value="sushiro">壽司郎</option>
+                            <option value="kura">藏壽司</option>
+                            <option value="torikizoku">鳥貴族</option>
+                            <option value="matsuya">松屋</option>
+                            <option value="sukiya">すき家</option>
+                            <option value="doutor">DOUTOR</option>
+                        </optgroup>
+                        <optgroup label="便利商店／交通">
+                            <option value="seven">7-ELEVEN</option>
+                            <option value="suica">Suica 儲值</option>
+                        </optgroup>
+                        <optgroup label="景點">
+                            <option value="tvtower">名古屋電視塔（MIRAI TOWER）</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div>
