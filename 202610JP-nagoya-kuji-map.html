@@ -4,31 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>名古屋一番賞地圖</title>
-<style>html{color-scheme:light}body{margin:0;font-size:14px;font-family:system-ui,sans-serif}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}.back{font-size:.86rem;color:var(--focus);text-decoration:none}.back:hover{text-decoration:underline}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-/* Layout: one column; the map is the hero, a detail card under it, then a per-day shop list and a small Inuyama inset. */
+/* Layout: one column; the street map is the hero, a detail card and "nearest to you" list under it, then per-day shop lists. */
 :root{
   --bg:#f2f4f6; --surface:#ffffff; --map:#e9edf1; --ink:#18202b; --muted:#5a6677; --line:#d5dbe3;
-  --kag:#a3163a; --kag-soft:#f6dfe5; --shi:#2b7350; --shi-soft:#dcefe5; --sold:#8b95a3; --focus:#0b63c4;
-  --l-higashi:#d99a00; --l-meijo:#7a55a6; --l-tsuru:#0090c8; --l-sakura:#cf2a31;
+  --kag:#a3163a; --kag-soft:#f6dfe5; --shi:#2b7350; --shi-soft:#dcefe5; --sold:#8b95a3; --focus:#0b63c4; --me:#1a73e8;
   --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0f141a; --surface:#18202a; --map:#141b23; --ink:#e6ebf1; --muted:#9aa6b6; --line:#2a3440;
-  --kag:#f06a8a; --kag-soft:#3a1d27; --shi:#55c28f; --shi-soft:#173528; --sold:#6b7584; --focus:#6fb0ff;
-  --l-higashi:#f0b62c; --l-meijo:#a487cc; --l-tsuru:#3cb6e6; --l-sakura:#ef5a5f; color-scheme:dark } }
+  --kag:#f06a8a; --kag-soft:#3a1d27; --shi:#55c28f; --shi-soft:#173528; --sold:#6b7584; --focus:#6fb0ff; --me:#4c9dff; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0f141a; --surface:#18202a; --map:#141b23; --ink:#e6ebf1; --muted:#9aa6b6; --line:#2a3440;
-  --kag:#f06a8a; --kag-soft:#3a1d27; --shi:#55c28f; --shi-soft:#173528; --sold:#6b7584; --focus:#6fb0ff;
-  --l-higashi:#f0b62c; --l-meijo:#a487cc; --l-tsuru:#3cb6e6; --l-sakura:#ef5a5f; color-scheme:dark }
+  --kag:#f06a8a; --kag-soft:#3a1d27; --shi:#55c28f; --shi-soft:#173528; --sold:#6b7584; --focus:#6fb0ff; --me:#4c9dff; color-scheme:dark }
 
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
-.wrap{max-width:980px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+.back{font-size:.86rem;color:var(--focus);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
 h1{font-family:var(--f-display);font-weight:900;font-size:clamp(1.6rem,5vw,2.3rem);line-height:1.2;margin:0;text-wrap:balance;letter-spacing:.02em}
 h2{font-family:var(--f-display);font-size:1.15rem;margin:0;text-wrap:balance}
 .eyebrow{font-size:.78rem;letter-spacing:.12em;color:var(--muted);margin:0 0 6px}
@@ -41,26 +43,28 @@ h2{font-family:var(--f-display);font-size:1.15rem;margin:0;text-wrap:balance}
 .ser p{margin:0;color:var(--muted);font-size:.88rem}
 .glyph{width:14px;height:14px;flex:none}
 
+.pick{background:var(--surface);border:1px solid var(--ink);border-radius:12px;padding:14px 16px;display:grid;gap:4px}
+.pick p{margin:0}
+.pick .tel{font-family:var(--f-mono);user-select:all}
+
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .controls .lbl{font-size:.78rem;color:var(--muted);letter-spacing:.08em;margin-right:2px}
 .chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.86rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.chip:focus-visible,.zoom button:focus-visible,.row:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.chip:focus-visible,.mbtn:focus-visible,.row:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 
-.mapbox{position:relative;background:var(--map);border:1px solid var(--line);border-radius:14px;overflow:hidden;height:min(64vh,560px);min-height:340px}
-#map{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
-#map:active{cursor:grabbing}
-.zoom{position:absolute;right:10px;top:10px;display:grid;gap:6px}
-.zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1.1rem;cursor:pointer}
-.zoom button.reset{font-size:.72rem}
-.legend{position:absolute;left:10px;bottom:10px;background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:.74rem;display:grid;gap:2px;max-width:calc(100% - 20px)}
-.legend .r{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.lines{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted)}
-.lines i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:3px}
-.scale{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
-.scale .bar{height:4px;border:1.5px solid var(--ink);border-top:none}
-.hint{position:absolute;left:10px;top:10px;font-size:.74rem;color:var(--muted);background:color-mix(in srgb,var(--surface) 85%,transparent);padding:3px 8px;border-radius:8px}
+.mapbox{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:min(66vh,580px);min-height:360px;background:var(--map)}
+#map{position:absolute;inset:0}
+.mtools{position:absolute;right:10px;top:10px;z-index:500;display:grid;gap:6px;justify-items:end}
+.mbtn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 11px;font:inherit;font-size:.84rem;cursor:pointer;box-shadow:0 1px 4px rgb(0 0 0 / .15);display:inline-flex;align-items:center;gap:6px}
+.mbtn.loc[aria-pressed="true"]{background:var(--me);border-color:var(--me);color:#fff}
+.legend{position:absolute;left:10px;bottom:24px;z-index:500;background:#fff;color:#18202b;border:1px solid #c9d0d9;border-radius:10px;padding:5px 10px;font-size:.74rem;max-width:calc(100% - 20px);opacity:.96}
+.legend summary{cursor:pointer;font-weight:700;font-size:.76rem}
+.legend .items{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.locmsg{font-size:.85rem;color:var(--muted);margin:-6px 0 0}
+.locmsg.err{color:var(--kag)}
 
 .info{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px;min-width:0}
 .info .name{font-weight:700;font-size:1.05rem}
@@ -73,12 +77,9 @@ h2{font-family:var(--f-display);font-size:1.15rem;margin:0;text-wrap:balance}
 .tag.plan{border-style:dashed;color:var(--muted)}
 .tag.star{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .near{font-size:.86rem;color:var(--muted)}
+.near b{color:var(--ink);font-weight:500}
 .gm{justify-self:start;font-size:.86rem;color:var(--focus);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:4px 10px}
 .gm:hover{text-decoration:underline}
-
-.pick{background:var(--surface);border:1px solid var(--ink);border-radius:12px;padding:14px 16px;display:grid;gap:4px}
-.pick p{margin:0}
-.pick .tel{font-family:var(--f-mono);user-select:all}
 
 .day{display:grid;gap:8px}
 .day header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -88,35 +89,35 @@ h2{font-family:var(--f-display);font-size:1.15rem;margin:0;text-wrap:balance}
 .row .t{min-width:0}
 .row .t b{font-weight:500;display:block;overflow-wrap:anywhere}
 .row .t small{color:var(--muted);font-size:.8rem}
-.row .d{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);white-space:nowrap}
+.row .d{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);white-space:nowrap;text-align:right}
 .row.sel{border-color:var(--ink)}
 .empty{color:var(--muted);font-size:.9rem;margin:0}
-
-.inset{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
-.inset svg{width:100%;height:auto;background:var(--map);border-radius:10px;display:block}
-.inset p{margin:0 0 6px;font-size:.9rem}
-@media (max-width:640px){.inset{grid-template-columns:1fr}}
 
 .notes{font-size:.82rem;color:var(--muted);display:grid;gap:4px}
 .notes p{margin:0}
 .notes a{color:var(--focus)}
 
-svg text{font-family:var(--f-body)}
-.ln{fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.6}
-.st{fill:var(--surface);stroke:var(--ink)}
-.stl{fill:var(--muted);paint-order:stroke;stroke:var(--map)}
-.lm{fill:var(--ink)}
-.lml{fill:var(--ink);font-weight:700;paint-order:stroke;stroke:var(--map)}
-.hotel{fill:var(--focus)}
-.mk-kag{fill:var(--kag);stroke:var(--surface)}
-.mk-shi{fill:var(--shi);stroke:var(--surface)}
-.mk-both{fill:var(--kag);stroke:var(--shi)}
-.mk-sold{fill:none;stroke:var(--sold)}
-.mk-plan{stroke-dasharray:2 2}
-.shl{fill:var(--ink);paint-order:stroke;stroke:var(--map)}
-.selring{fill:none;stroke:var(--focus)}
-.hit{fill:transparent;cursor:pointer}
-.dim{opacity:.18}
+/* Leaflet markers：底圖永遠是淺色，所以地圖上的標記與標籤用固定顏色，不跟深色模式變 */
+.leaflet-container{font-family:var(--f-body);background:#eef0f2}
+.ic{background:none;border:none}
+.ic svg{display:block;overflow:visible;filter:drop-shadow(0 1px 1.5px rgb(0 0 0 / .55))}
+.ic.dim{opacity:.4}
+.ic.dim svg{filter:grayscale(1)}
+.ic.sel svg{filter:drop-shadow(0 0 0 #0b63c4) drop-shadow(0 0 4px #0b63c4) drop-shadow(0 0 2px #0b63c4)}
+.lm-ic span{display:block;width:15px;height:15px;border-radius:3px;background:#18202b;border:2.5px solid #fff;box-sizing:border-box;box-shadow:0 1px 3px rgb(0 0 0 / .55)}
+.lm-ic.hotel span{background:#0b63c4;width:18px;height:18px}
+.lm-ic.dim{opacity:.35}
+.leaflet-tooltip.lm-tip{background:#18202b;color:#fff;border:none;font-weight:700;font-size:12.5px;padding:2px 7px;border-radius:5px;box-shadow:0 1px 3px rgb(0 0 0 / .4)}
+.leaflet-tooltip.shop-tip{background:#fff;color:#18202b;border:1px solid #c9d0d9;border-left:4px solid #18202b;font-size:11.5px;font-weight:500;padding:1px 6px;border-radius:4px;box-shadow:0 1px 3px rgb(0 0 0 / .3)}
+.leaflet-tooltip.shop-tip.t-kag{border-left-color:#c8102e}
+.leaflet-tooltip.shop-tip.t-shi{border-left-color:#1d7f4b}
+.leaflet-tooltip.shop-tip.t-both{border-left-color:#c8102e;background:#fff7d6;font-weight:700}
+.leaflet-tooltip.lm-tip::before,.leaflet-tooltip.shop-tip::before{display:none}
+.hide-minor .lm-tip.minor,.hide-shop .shop-tip.opt{display:none}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surface);color:var(--ink)}
+.leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.5}
+.leaflet-popup-content a{color:var(--focus)}
+.leaflet-control-attribution{font-size:10px}
 @media (prefers-reduced-motion:no-preference){.row{transition:border-color .15s}}
 </style>
 </head>
@@ -126,7 +127,7 @@ svg text{font-family:var(--f-body)}
   <header>
     <p class="eyebrow">名古屋行程 10/29–11/2 · 一番くじ</p>
     <h1>名古屋一番賞地圖</h1>
-    <p class="lede">兩套一番賞在名古屋的販售店，和你行程會經過的地點畫在一起。選天數，地圖會把那天順路的店亮起來，下面列出離得最近的幾家。</p>
+    <p class="lede">兩套一番賞在名古屋的販售店，和行程會經過的地點疊在街道地圖上。選天數，地圖會把那天順路的店亮起來；按「我的位置」可以看離你最近的店。</p>
   </header>
 
   <section class="series" aria-label="兩套一番賞">
@@ -151,28 +152,36 @@ svg text{font-family:var(--f-body)}
     <span class="lbl">天數</span>
     <button class="chip" data-day="all" id="d-all">全部</button>
     <button class="chip" data-day="1" id="d-1">Day 1 · 名古屋站、榮</button>
+    <button class="chip" data-day="2" id="d-2">Day 2 · 四日市、長島</button>
     <button class="chip" data-day="3" id="d-3">Day 3 · 榮、大須</button>
     <button class="chip" data-day="4" id="d-4">Day 4 · 犬山、德川園</button>
     <button class="chip" data-day="5" id="d-5">Day 5 · 名古屋站</button>
+    <button class="chip" data-day="9" id="d-9">千種站</button>
     <span class="sep" aria-hidden="true"></span>
-    <button class="chip" data-prod="kag" id="p-kag" aria-pressed="true"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1 13 7 7 13 1 7Z" style="fill:var(--kag)"/></svg>カグラバチ</button>
-    <button class="chip" data-prod="shi" id="p-shi" aria-pressed="true"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" style="fill:var(--shi)"/></svg>進擊的巨人</button>
+    <button class="chip" id="p-kag" aria-pressed="true"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1 13 7 7 13 1 7Z" style="fill:var(--kag)"/></svg>カグラバチ</button>
+    <button class="chip" id="p-shi" aria-pressed="true"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" style="fill:var(--shi)"/></svg>進擊的巨人</button>
   </div>
 
   <div class="mapbox">
-    <svg id="map" role="img" aria-label="名古屋市中心一番賞販售店地圖"></svg>
-    <div class="hint">拖曳移動 · 雙指或滾輪縮放 · 點店家看資訊</div>
-    <div class="zoom">
-      <button id="zin" aria-label="放大">＋</button>
-      <button id="zout" aria-label="縮小">－</button>
-      <button id="zreset" class="reset" aria-label="回到全圖">全圖</button>
+    <div id="map" role="region" aria-label="名古屋一番賞販售店街道地圖"></div>
+    <div class="mtools">
+      <button class="mbtn loc" id="locBtn" aria-pressed="false"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="3.2" fill="currentColor"/><circle cx="7" cy="7" r="5.8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>我的位置</button>
+      <button class="mbtn" id="allBtn">名古屋全圖</button>
+      <button class="mbtn" id="inuBtn">犬山</button>
     </div>
-    <div class="legend">
-      <div class="r"><svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" style="fill:var(--ink)"/></svg>行程地點 <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" style="fill:var(--focus)"/></svg>飯店 <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" style="fill:none;stroke:var(--sold);stroke-width:1.5"/></svg>官網標完売 <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5" style="fill:var(--shi);stroke:var(--ink);stroke-width:1.2;stroke-dasharray:2 2"/></svg>10 月下旬開賣</div>
-      <div class="lines"><span><i style="background:var(--l-sakura)"></i>櫻通線</span><span><i style="background:var(--l-higashi)"></i>東山線</span><span><i style="background:var(--l-meijo)"></i>名城線</span><span><i style="background:var(--l-tsuru)"></i>鶴舞線</span></div>
-      <div class="scale" aria-hidden="true"><div class="bar" id="scaleBar" style="width:80px"></div><span id="scaleTxt">500 m</span></div>
-    </div>
+    <details class="legend" id="legend" open><summary>圖例</summary><div class="items">
+      <span><svg class="glyph" viewBox="0 0 14 14"><path d="M7 1 13 7 7 13 1 7Z" fill="#c8102e" stroke="#fff" stroke-width="1.2"/></svg>カグラバチ</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="#1d7f4b" stroke="#fff" stroke-width="1.2"/></svg>進擊（Lawson）</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#c8102e"/><circle cx="7" cy="7" r="4.2" fill="none" stroke="#1d7f4b" stroke-width="1.8"/></svg>兩套都有</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" rx="2" fill="#18202b"/></svg>行程地點</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><rect x="2" y="2" width="10" height="10" rx="2" fill="#0b63c4"/></svg>飯店</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><path d="M7 1 13 7 7 13 1 7Z" fill="#fff" stroke="#7b8594" stroke-width="1.5"/></svg>官網標完売</span>
+      <span><svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="#9aa3ad" opacity=".6"/></svg>灰色＝不在這天路線上</span>
+    </div></details>
   </div>
+  <p class="locmsg" id="locMsg" hidden></p>
+
+  <section class="info" id="nearme" hidden aria-live="polite"></section>
 
   <section class="info" id="info" aria-live="polite">
     <p class="empty">點地圖上的店家，或下面清單的一列，這裡會顯示店名、地址、離哪個行程地點最近，以及 Google 地圖連結。</p>
@@ -180,31 +189,30 @@ svg text{font-family:var(--f-body)}
 
   <section id="list" class="day" aria-label="各天順路店家"></section>
 
-  <section class="inset" aria-label="犬山小地圖">
-    <svg id="inu" viewBox="0 0 400 300" role="img" aria-label="犬山站、本町通、犬山城與 Lawson 犬山本町店位置"></svg>
-    <div>
-      <h2>Day 4 · 犬山</h2>
-      <p><b>ローソン 犬山本町店</b>（進擊）在城下町南端，離本町通約 <span class="mono">210 m</span>，從犬山站走去城下町會經過附近。</p>
-      <p>カグラバチ在犬山只有「ブックタウン犬山五郎丸店」，在城下町南方約 <span class="mono">3 km</span>，不順路。</p>
-      <p><a class="gm" href="https://www.google.com/maps/search/?api=1&amp;query=35.38055,136.939872" target="_blank" rel="noopener">Lawson 犬山本町店 · Google 地圖</a></p>
-    </div>
-  </section>
-
   <section class="notes">
-    <p>資料：一番くじ倶楽部店鋪搜尋（10/27 查詢），店家座標來自官網。官網提醒清單上的店開賣日可能不同、也可能已賣完，「完売」不一定會標示。</p>
-    <p>距離是直線距離。地鐵線是把車站直接連起來的示意線，車站與行程地點的位置取自 Google 地圖。名古屋城、熱田神宮附近 1 km 內兩套都沒有店；Day 2 御在所、名花之里沒有列入。</p>
-    <p>來源：<a href="https://1kuji.com/shop_lists?product_id=kagurabachi" target="_blank" rel="noopener">カグラバチ 店鋪搜尋</a> · <a href="https://1kuji.com/shop_lists?product_id=shingeki16" target="_blank" rel="noopener">進撃の巨人〜心臓を捧げよ〜 店鋪搜尋</a></p>
+    <p>資料：一番くじ倶楽部店鋪搜尋（愛知 10/27、三重與千種區 10/28 查詢），店家座標來自官網。官網提醒清單上的店開賣日可能不同、也可能已賣完，「完売」不一定會標示。</p>
+    <p>距離是直線距離，走路分鐘以每分鐘 80 m 估算。行程地點位置取自 Google 地圖。名古屋城、熱田神宮附近 1 km 內兩套都沒有店。Day 2 的御在所、湯之山溫泉、名花之里附近也都沒有店；四日市轉車只有 6–12 分鐘，近鐵百貨店 B1 的丸善就在站旁，但趕不上會晚一小時，要自己評估。カグラバチ在犬山只有「ブックタウン犬山五郎丸店」，在城下町南方約 3 km。</p>
+    <p>定位需要用 https 網址開啟（例如 GitHub 上的頁面），第一次會跳出「允許取得位置」，按允許才會顯示。位置只在你的手機上計算，不會傳到任何地方。</p>
+    <p>底圖：國土地理院「地理院タイル」，備用 CARTO（© OpenStreetMap 貢獻者），可用地圖左上角縮放按鈕下面的圖層按鈕切換。來源：<a href="https://1kuji.com/shop_lists?product_id=kagurabachi" target="_blank" rel="noopener">カグラバチ 店鋪搜尋</a> · <a href="https://1kuji.com/shop_lists?product_id=shingeki16" target="_blank" rel="noopener">進撃の巨人〜心臓を捧げよ〜 店鋪搜尋</a></p>
   </section>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
-const KAG=[["丸善　名古屋本店","中区栄三丁目８番１４号 1階 レジカウンター",35.167208,136.905794,"完売"],["オリンピアサカエチカ店","中区栄３−４−６ サカエチカ内",35.168995,136.907524,"発売予定日10月下旬"],["アニメイト名古屋パルコ","中区栄3丁目29-1 名古屋パルコ東館4F",35.163036,136.907241,"発売予定日10月下旬"],["＃Ｃ−ｐｌａ　名古屋大須店","中区大須２６番２６号 クレスト大須３Ａ １階・２階",35.159103,136.903372,""],["ジャンプショップ 名古屋店","中区栄3-28-11 名古屋ZERO GATE 1階",35.163615,136.906085,""],["ジュンク堂書店　名古屋栄店","中区新栄町１−１　明治安田生命名古屋ビル地下１階",35.169482,136.909704,""],["ドリームカプセル　名古屋栄セントラルパーク","中区錦3-15-13先 セントラルパーク",35.172277,136.90883,""],["ドン・キホーテ大須店","中区大須３−３０−６０",35.158833,136.90526,""],["ドン・キホーテ栄本店","中区錦３丁目１７−１５　３階レジ",35.170215,136.906409,""],["ふるいち名古屋大須店","中区大須３−１９−５　１Ｆ",35.160291,136.904953,""],["駿河屋 名古屋大須本館","中区大須３−３２−２３　３Ｆ",35.158423,136.904857,""],["BOOKOFF SUPER BAZAAR 栄スカイル店","中区栄3-4-5 栄スカイル8F",35.168456,136.906373,""],["一番くじ公式ショップ 愛知イオンモールナゴヤドーム前店","東区矢田南4-102-3 イオンモールナゴヤドーム前3F",35.18716,136.945032,"発売予定日10月下旬"],["未来屋書店 ナゴヤドーム前店","東区矢田南4-102-3 イオンナゴヤドーム前SC3F",35.18706,136.944994,"発売予定日10月下旬"],["ふるいちイオンモールナゴヤＤ前店","東区矢田南４−１０２−３　イオンモール　ナゴヤドーム前３階",35.186811,136.943244,""],["TSUTAYA 大曽根店","東区東大曽根町46-6　アスティ大曽根内",35.192136,136.937244,""],["ドリームカプセル　マーケットスクエアささしま","中村区平池町4丁目60番14号マーケットスクエアささしま1F",35.162646,136.884802,""],["アニメイト 名古屋店","中村区椿町18-4 椿太閤ビル",35.168036,136.88057,""],["一番くじ公式ショップ 名古屋駅前店","中村区椿町6-6　ニッセイ名古屋駅西ビル別館6F",35.170594,136.879256,""],["三省堂書店名古屋本店","中村区名駅１−１−３　タカシマヤゲートタワーモール８Ｆ",35.172207,136.882618,""]];
-const SHI=[["L 中区大須二丁目店","中区大須２‐６‐１６",35.16077,136.901703],["L 栄二丁目店","中区栄２‐２‐２９",35.167308,136.898888],["L 中区錦一丁目店","中区錦１‐８‐２７",35.170101,136.894473],["L 中区新栄三丁目店","中区新栄３‐１４０３‐１",35.16712,136.923626],["L 鶴舞駅西店","中区千代田２‐１６‐１０",35.156383,136.914336],["L 大須一丁目店","中区大須１‐３０‐５４",35.159144,136.894542],["L 中区錦二丁目店","中区錦２‐１８‐１９",35.169202,136.899424],["L 丸の内伏見通店","中区丸の内１‐８‐２０",35.175153,136.896447],["L 呉服町通店","中区栄３‐１９‐１６",35.165223,136.904346],["L ＣＢＣ店","中区新栄１‐２‐８",35.169267,136.916799],["L 栄五丁目店","中区栄５‐１６‐１４　新東陽ビル１階",35.162922,136.90983],["L 広小路栄四丁目店","中区栄４‐２‐１０",35.16898,136.911716],["L 上前津店","中区大須４‐１２‐３１",35.157982,136.907265],["L 千代田一丁目店","中区千代田１‐１６‐１５",35.159333,136.915319],["L 中区大須三丁目店","中区大須３‐６‐２５",35.161861,136.905933],["L 久屋大通店","中区栄４‐１５‐２３",35.166671,136.909587],["L 中区下前津店","中区上前津２‐９１６",35.154785,136.905623],["L 中区千代田店","中区千代田３‐２５‐２",35.154475,136.912135],["L 上前津駅南店","中区上前津１‐５０５",35.156591,136.905533],["L 大須スケートリンク店","中区門前町１‐６０",35.157486,136.898795],["L 新栄町三丁目店","中区新栄町３‐１‐１１",35.169526,136.913194],["L 錦袋町通店","中区錦３‐１２‐１",35.17135,136.903328],["L 中区丸の内三丁目店","中区丸の内３‐２１‐２５",35.173792,136.904249],["L ザ・ランドマーク名古屋栄店","中区錦３‐２５０１‐１",35.169242,136.907466],["L 久屋大通駅南店","中区錦３‐６‐３５",35.172524,136.906939],["L 中区大井町店","中区大井町５番８号",35.151133,136.907073],["L 東区矢田五丁目店","東区矢田５‐４‐１",35.191688,136.942338],["L 東区代官町店","東区代官町３５‐１６ 第一富士ビル１Ｆ",35.17445,136.92088],["L 錦通東桜店","東区東桜２‐１６‐３４",35.170873,136.917549],["L 東区筒井一丁目店","東区筒井１‐１３‐２",35.17808,136.927454],["L 高岳駅南店","東区東桜２‐２‐１",35.17391,136.916527],["L 東区芳野三丁目店","東区芳野３‐１‐２２",35.184993,136.924711],["L 東区徳川二丁目店","東区徳川２‐６‐８",35.185998,136.926597],["L 東区泉一丁目店","東区泉１‐２‐３",35.178114,136.909538],["一番くじ公式ショップ 名古屋駅前店","中村区椿町6-6　ニッセイ名古屋駅西ビル別館6F",35.170594,136.879256],["L 椿町店","中村区椿町１４‐１３",35.16847,136.880226],["L 名駅太閤通口店","中村区椿町１‐１６",35.17188,136.879436],["L 中村則武一丁目店","中村区則武１‐６‐３",35.172059,136.87841],["L ＭＩＤＬＡＮＤ　ＳＴＡＴＩＯＮ店","中村区名駅４‐７‐１　ミッドランドスクエアＢ１",35.169524,136.885323],["L 中日美容専門学校店","中村区名駅南４‐１１‐３",35.163433,136.886479],["L エニシオ名駅店","中村区名駅４‐８‐２６",35.168862,136.885856],["L 名駅南二丁目店","中村区名駅南２‐１０‐２２",35.165601,136.888394],["L 笹島南店","中村区名駅南１‐２３‐２５",35.166926,136.885697],["L ＪＰローソンＫＩＴＴＥ名古屋２Ｆ店","中村区名駅１‐１‐１ ＪＰタワー名古屋２Ｆ",35.173081,136.882377],["L ささしまライブ駅前店","中村区平池町４‐６０‐５",35.160657,136.881461],["L ＪＲゲートタワー店","中村区名駅１‐１‐３",35.172289,136.883161],["L 名駅二丁目店","中村区名駅２‐４４‐２",35.173635,136.88385],["L 北区柳原店","北区柳原１‐２‐１３",35.187692,136.906883],["L 北区山田町店","北区山田町４丁目６８番地",35.199272,136.938714],["L 北区山田一丁目店","北区山田１‐７‐３",35.194159,136.936521],["L 北区平安二丁目店","北区平安２‐１‐２４",35.196884,136.929995],["L 北区清水一丁目店","北区清水１‐９‐１２",35.186719,136.912867],["L 清水五丁目店","北区清水５‐３７‐１",35.196559,136.915551],["L 名鉄清水駅前店","北区清水２‐６‐１",35.187427,136.913346],["L 犬山本町店","犬山市大字犬山字東古券１１３‐５",35.38055,136.939872]];
+const KAG=[["丸善　名古屋本店","中区栄三丁目８番１４号 1階 レジカウンター",35.167208,136.905794,"完売"],["オリンピアサカエチカ店","中区栄３−４−６ サカエチカ内",35.168995,136.907524,"発売予定日10月下旬"],["アニメイト名古屋パルコ","中区栄3丁目29-1 名古屋パルコ東館4F",35.163036,136.907241,"発売予定日10月下旬"],["＃Ｃ−ｐｌａ　名古屋大須店","中区大須２６番２６号 クレスト大須３Ａ １階・２階",35.159103,136.903372,""],["ジャンプショップ 名古屋店","中区栄3-28-11 名古屋ZERO GATE 1階",35.163615,136.906085,""],["ジュンク堂書店　名古屋栄店","中区新栄町１−１　明治安田生命名古屋ビル地下１階",35.169482,136.909704,""],["ドリームカプセル　名古屋栄セントラルパーク","中区錦3-15-13先 セントラルパーク",35.172277,136.90883,""],["ドン・キホーテ大須店","中区大須３−３０−６０",35.158833,136.90526,""],["ドン・キホーテ栄本店","中区錦３丁目１７−１５　３階レジ",35.170215,136.906409,""],["ふるいち名古屋大須店","中区大須３−１９−５　１Ｆ",35.160291,136.904953,""],["駿河屋 名古屋大須本館","中区大須３−３２−２３　３Ｆ",35.158423,136.904857,""],["BOOKOFF SUPER BAZAAR 栄スカイル店","中区栄3-4-5 栄スカイル8F",35.168456,136.906373,""],["一番くじ公式ショップ 愛知イオンモールナゴヤドーム前店","東区矢田南4-102-3 イオンモールナゴヤドーム前3F",35.18716,136.945032,"発売予定日10月下旬"],["未来屋書店 ナゴヤドーム前店","東区矢田南4-102-3 イオンナゴヤドーム前SC3F",35.18706,136.944994,"発売予定日10月下旬"],["ふるいちイオンモールナゴヤＤ前店","東区矢田南４−１０２−３　イオンモール　ナゴヤドーム前３階",35.186811,136.943244,""],["TSUTAYA 大曽根店","東区東大曽根町46-6　アスティ大曽根内",35.192136,136.937244,""],["ドリームカプセル　マーケットスクエアささしま","中村区平池町4丁目60番14号マーケットスクエアささしま1F",35.162646,136.884802,""],["アニメイト 名古屋店","中村区椿町18-4 椿太閤ビル",35.168036,136.88057,""],["一番くじ公式ショップ 名古屋駅前店","中村区椿町6-6　ニッセイ名古屋駅西ビル別館6F",35.170594,136.879256,""],["三省堂書店名古屋本店","中村区名駅１−１−３　タカシマヤゲートタワーモール８Ｆ",35.172207,136.882618,""],["ブックタウン犬山五郎丸店","犬山市五郎丸郷瀬川５",35.359031,136.943001,"発売予定日10月下旬"],["丸善　四日市店", "四日市市諏訪栄町７−３４　近鉄百貨店四日市店　地下１階", 34.967043, 136.619036, "発売予定日10月下旬"],["ドン・キホーテアピタ四日市", "四日市市安島一丁目３番３１号（トナリエ四日市）", 34.968315, 136.616695, ""],["三洋堂トレカ館 四日市店", "四日市市安島1-3-31 トナリエ四日市4階", 34.968315, 136.616695, ""],["プレイズ　イオンタウン四日市泊店", "四日市市泊小柳町４−５−１ イオンタウン四日市泊２Ｆ", 34.938703, 136.601474, "完売"],["未来屋書店 四日市北店", "四日市市富州原町2番40号 イオンモール四日市北2F", 35.006885, 136.657206, "完売"],["MEGAドン・キホーテ四日市店", "四日市市西日野町１６０８−１", 34.952217, 136.584901, ""],["ロビンフッド久保田店", "四日市市久保田1丁目3番地25", 34.973418, 136.607848, ""],["イオン日永店　2階テレビゲーム売場", "四日市市日永4-2-41", 34.946889, 136.60382, ""],["BOOKOFF 四日市阿倉川店", "四日市市城山町1627-1", 34.985866, 136.630625, ""],["TSUTAYA いまじん白揚笹川店", "四日市市日永西2丁目13-3", 34.952099, 136.601037, ""],["ＭＥＧＡドン・キホーテＵＮＹ　星川店", "桑名市大字星川十二８３５", 35.067794, 136.6277, ""],["アピタ桑名店 玩具売場お勘定場", "桑名市中央町三丁目２１番地", 35.064124, 136.687909, ""],["BOOKOFF SUPER BAZAAR 258号イオン桑名店", "桑名市新西方 1-35 イオン桑名ショッピングセンター3番街2F", 35.070619, 136.662906, ""],["三洋堂書店 桑名店", "桑名市大字東方字福島前764番地", 35.067985, 136.681912, ""],["三洋堂書店 星川店", "桑名市大字星川字十二899番地", 35.066489, 136.628782, ""],["ピアゴ菰野店", "三重郡菰野町竹成３９９８−７　ピアゴ菰野店文玩売場", 35.039181, 136.529071, ""],["三洋堂書店 菰野店", "三重郡菰野町宿野357番地", 35.004823, 136.528382, ""],["丸善イオンタウン千種店", "千種区千種2-16-13 イオンタウン千種店2F", 35.161864, 136.922994, "発売予定日10月下旬"],["アピタ千代田橋店", "千種区千代田橋２−１−１", 35.187352, 136.969454, ""]];
+const SHI=[["L 中区大須二丁目店","中区大須２‐６‐１６",35.16077,136.901703],["L 栄二丁目店","中区栄２‐２‐２９",35.167308,136.898888],["L 中区錦一丁目店","中区錦１‐８‐２７",35.170101,136.894473],["L 中区新栄三丁目店","中区新栄３‐１４０３‐１",35.16712,136.923626],["L 鶴舞駅西店","中区千代田２‐１６‐１０",35.156383,136.914336],["L 大須一丁目店","中区大須１‐３０‐５４",35.159144,136.894542],["L 中区錦二丁目店","中区錦２‐１８‐１９",35.169202,136.899424],["L 丸の内伏見通店","中区丸の内１‐８‐２０",35.175153,136.896447],["L 呉服町通店","中区栄３‐１９‐１６",35.165223,136.904346],["L ＣＢＣ店","中区新栄１‐２‐８",35.169267,136.916799],["L 栄五丁目店","中区栄５‐１６‐１４　新東陽ビル１階",35.162922,136.90983],["L 広小路栄四丁目店","中区栄４‐２‐１０",35.16898,136.911716],["L 上前津店","中区大須４‐１２‐３１",35.157982,136.907265],["L 千代田一丁目店","中区千代田１‐１６‐１５",35.159333,136.915319],["L 中区大須三丁目店","中区大須３‐６‐２５",35.161861,136.905933],["L 久屋大通店","中区栄４‐１５‐２３",35.166671,136.909587],["L 中区下前津店","中区上前津２‐９１６",35.154785,136.905623],["L 中区千代田店","中区千代田３‐２５‐２",35.154475,136.912135],["L 上前津駅南店","中区上前津１‐５０５",35.156591,136.905533],["L 大須スケートリンク店","中区門前町１‐６０",35.157486,136.898795],["L 新栄町三丁目店","中区新栄町３‐１‐１１",35.169526,136.913194],["L 錦袋町通店","中区錦３‐１２‐１",35.17135,136.903328],["L 中区丸の内三丁目店","中区丸の内３‐２１‐２５",35.173792,136.904249],["L ザ・ランドマーク名古屋栄店","中区錦３‐２５０１‐１",35.169242,136.907466],["L 久屋大通駅南店","中区錦３‐６‐３５",35.172524,136.906939],["L 中区大井町店","中区大井町５番８号",35.151133,136.907073],["L 東区矢田五丁目店","東区矢田５‐４‐１",35.191688,136.942338],["L 東区代官町店","東区代官町３５‐１６ 第一富士ビル１Ｆ",35.17445,136.92088],["L 錦通東桜店","東区東桜２‐１６‐３４",35.170873,136.917549],["L 東区筒井一丁目店","東区筒井１‐１３‐２",35.17808,136.927454],["L 高岳駅南店","東区東桜２‐２‐１",35.17391,136.916527],["L 東区芳野三丁目店","東区芳野３‐１‐２２",35.184993,136.924711],["L 東区徳川二丁目店","東区徳川２‐６‐８",35.185998,136.926597],["L 東区泉一丁目店","東区泉１‐２‐３",35.178114,136.909538],["一番くじ公式ショップ 名古屋駅前店","中村区椿町6-6　ニッセイ名古屋駅西ビル別館6F",35.170594,136.879256],["L 椿町店","中村区椿町１４‐１３",35.16847,136.880226],["L 名駅太閤通口店","中村区椿町１‐１６",35.17188,136.879436],["L 中村則武一丁目店","中村区則武１‐６‐３",35.172059,136.87841],["L ＭＩＤＬＡＮＤ　ＳＴＡＴＩＯＮ店","中村区名駅４‐７‐１　ミッドランドスクエアＢ１",35.169524,136.885323],["L 中日美容専門学校店","中村区名駅南４‐１１‐３",35.163433,136.886479],["L エニシオ名駅店","中村区名駅４‐８‐２６",35.168862,136.885856],["L 名駅南二丁目店","中村区名駅南２‐１０‐２２",35.165601,136.888394],["L 笹島南店","中村区名駅南１‐２３‐２５",35.166926,136.885697],["L ＪＰローソンＫＩＴＴＥ名古屋２Ｆ店","中村区名駅１‐１‐１ ＪＰタワー名古屋２Ｆ",35.173081,136.882377],["L ささしまライブ駅前店","中村区平池町４‐６０‐５",35.160657,136.881461],["L ＪＲゲートタワー店","中村区名駅１‐１‐３",35.172289,136.883161],["L 名駅二丁目店","中村区名駅２‐４４‐２",35.173635,136.88385],["L 北区柳原店","北区柳原１‐２‐１３",35.187692,136.906883],["L 北区山田町店","北区山田町４丁目６８番地",35.199272,136.938714],["L 北区山田一丁目店","北区山田１‐７‐３",35.194159,136.936521],["L 北区平安二丁目店","北区平安２‐１‐２４",35.196884,136.929995],["L 北区清水一丁目店","北区清水１‐９‐１２",35.186719,136.912867],["L 清水五丁目店","北区清水５‐３７‐１",35.196559,136.915551],["L 名鉄清水駅前店","北区清水２‐６‐１",35.187427,136.913346],["L 犬山本町店","犬山市大字犬山字東古券１１３‐５",35.38055,136.939872],["ローソン 桑名長島町店", "桑名市長島町押付字小六５３２‐６", 35.097293, 136.70199],["ローソン 桑名駅前店", "桑名市桑栄町１‐１", 35.066282, 136.685048],["ローソン 桑名新矢田二丁目店", "桑名市新矢田２‐１６", 35.06048, 136.684663],["ローソン 桑名紺屋町店", "桑名市紺屋町３７", 35.062386, 136.69307],["ローソン 桑名安永店", "桑名市大字安永９３５‐１", 35.052745, 136.682502],["ローソン 桑名星見ヶ丘店", "桑名市星見ヶ丘６‐９０４", 35.066484, 136.635219],["ローソン 桑名多度御衣野店", "桑名市多度町御衣野字亥ノ谷２００９", 35.110203, 136.635297],["ローソン 菰野大強原店", "三重郡菰野町大字大強原字赤坂２４９６", 35.037815, 136.530715],["ローソン 四日市東新町店", "四日市市東新町１‐２０", 34.974823, 136.632759],["ローソン 四日市羽津山店", "四日市市羽津山町２‐１１", 34.98773, 136.627074],["ローソン 四日市別名店", "四日市市別名５‐５‐２９", 34.99712, 136.63239],["ローソン 千種駅前店", "千種区今池１‐２‐１", 35.169538, 136.931254],["ローソン 覚王山店", "千種区覚王山通９‐１８", 35.166106, 136.951705],["ローソン 千種区城木町店", "千種区城木町２‐１００", 35.159019, 136.942437],["ローソン 千種区仲田店", "千種区仲田一丁目１番３号", 35.175529, 136.942116]];
 
-// 行程地點：days = 會經過的天數
+// 行程地點：days = 會經過的天數；minor = 縮小時不顯示名稱
 const LM=[
- {n:"飯店",lat:35.1732939,lng:136.91098,days:[1,3,4,5],hotel:1},
+ {n:"飯店",lat:35.1732939,lng:136.91098,days:[1,2,3,4,5],hotel:1,nf:1},
+ {n:"名鉄バスセンター",lat:35.16858,lng:136.88417,days:[2],minor:1,nf:1},
+ {n:"近鐵四日市（轉車）",lat:34.96706,lng:136.61849,days:[2],far:1},
+ {n:"湯之山溫泉站",lat:35.01162,lng:136.47371,days:[2],far:1},
+ {n:"御在所纜車",lat:35.016785,lng:136.446382,days:[2],far:1},
+ {n:"近鐵長島站",lat:35.09782,lng:136.69674,days:[2],far:1},
+ {n:"名花之里",lat:35.082131,lng:136.703481,days:[2],far:1},
+ {n:"千種站",lat:35.170167,lng:136.930662,days:[9],r:1300},
  {n:"名鐵名古屋",lat:35.168696,lng:136.884117,days:[1,4,5],minor:1},
  {n:"JR 名古屋站",lat:35.170893,lng:136.882491,days:[1,5]},
  {n:"柳橋中央市場",lat:35.169991,lng:136.88804,days:[1],minor:1},
@@ -221,134 +229,147 @@ const LM=[
  {n:"綠洲 21",lat:35.170901,lng:136.909673,days:[4],minor:1},
  {n:"名古屋城",lat:35.185583,lng:136.899124,days:[5]},
  {n:"Midland Square",lat:35.170009,lng:136.885186,days:[5],minor:1},
- {n:"犬山城",lat:35.38836,lng:136.939177,days:[4],inu:1},
- {n:"本町通",lat:35.382443,lng:136.939401,days:[4],inu:1},
- {n:"犬山站",lat:35.38032,lng:136.945692,days:[4],inu:1}
+ {n:"犬山城",lat:35.38836,lng:136.939177,days:[4],inu:1,nf:1,far:1},
+ {n:"本町通",lat:35.382443,lng:136.939401,days:[4],inu:1,nf:1,far:1},
+ {n:"犬山站",lat:35.38032,lng:136.945692,days:[4],inu:1,nf:1,far:1}
 ];
-const ST={nagoya:[35.170893,136.882491,"名古屋"],kokusai:[35.171872,136.887701,"国際センター"],maru:[35.173909,136.896904,"丸の内"],hisaya:[35.173741,136.907777,"久屋大通"],taka:[35.17414,136.916113,"高岳"],fushimi:[35.169251,136.897421,"伏見"],sakae:[35.170048,136.908532,"栄"],shinsakae:[35.17079,136.920469,"新栄町"],castle:[35.181281,136.90532,"名古屋城"],yaba:[35.163707,136.908904,"矢場町"],kamimae:[35.157393,136.906547,"上前津"],osukan:[35.161363,136.898199,"大須観音"],ozone:[35.191401,136.937181,"大曽根"]};
-const LINES=[["l-sakura",["nagoya","kokusai","maru","hisaya","taka"]],["l-higashi",["nagoya","fushimi","sakae","shinsakae"]],["l-meijo",["castle","hisaya","sakae","yaba","kamimae"]],["l-tsuru",["maru","fushimi","osukan","kamimae"]]];
-const DAYS={1:"Day 1 · 10/29 名古屋站、榮",3:"Day 3 · 10/31 榮、大須（對調時是 10/30）",4:"Day 4 · 11/1 犬山、大曽根、德川園、綠洲 21",5:"Day 5 · 11/2 名古屋站、Midland Square"};
+const DAYS={1:"Day 1 · 10/29 名古屋站、榮",2:"Day 2 · 10/30 四日市轉車、近鐵長島（對調時是 10/31）",9:"千種站附近",3:"Day 3 · 10/31 榮、大須（對調時是 10/30）",4:"Day 4 · 11/1 犬山、大曽根、德川園、綠洲 21",5:"Day 5 · 11/2 名古屋站、Midland Square"};
 const NEAR=500;
 
 function dist(a,b){return Math.round(Math.hypot((a.lat-b.lat)*110950,(a.lng-b.lng)*91100));}
+const walk=d=>Math.max(1,Math.ceil(d/80));
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const shops=new Map();
 for(const [n,a,lat,lng,st] of KAG){shops.set(n,{n,a,lat,lng,kag:1,shi:0,st:st||""});}
 for(const [n0,a,lat,lng] of SHI){const n=n0.replace(/^L /,"ローソン ");const s=shops.get(n);if(s){s.shi=1}else{shops.set(n,{n,a,lat,lng,kag:0,shi:1,st:""})}}
 const S=[...shops.values()].map((s,i)=>Object.assign(s,{id:"s"+i,lawson:/^ローソン/.test(s.n),official:/公式ショップ 名古屋駅前店/.test(s.n)}));
 S.forEach(s=>{s.near=LM.map(l=>({l,d:dist(s,l)})).sort((x,y)=>x.d-y.d);});
 
-// projection (meters)
-const LNG0=136.872,LAT0=35.2,MX=91100,MY=110950;
-const P=(lat,lng)=>[(lng-LNG0)*MX,(LAT0-lat)*MY];
-const EXT={x:0,y:0,w:(136.95-LNG0)*MX,h:(LAT0-35.148)*MY};
-const inMain=o=>o.lat>35.148&&o.lat<35.2&&o.lng>136.872&&o.lng<136.95;
-
-let state={day:"1",kag:true,shi:true,sel:null};
+let state={day:"1",kag:true,shi:true,sel:null,me:null};
 try{const sv=JSON.parse(localStorage.getItem("kujimap")||"{}");if(sv.day)state.day=sv.day;if(sv.kag===false)state.kag=false;if(sv.shi===false)state.shi=false;}catch(e){}
 function save(){try{localStorage.setItem("kujimap",JSON.stringify({day:state.day,kag:state.kag,shi:state.shi}))}catch(e){}}
 
-const svg=document.getElementById("map");
-let vb={x:0,y:0,w:EXT.w};
-function aspect(){return (svg.clientHeight||400)/(svg.clientWidth||400);}
-function kpx(){return (svg.clientWidth||400)/vb.w;}
-function clampW(w){return Math.max(350,Math.min(EXT.w*1.3,w));}
-function fitAll(){vb.w=EXT.w;const h=vb.w*aspect();if(h<EXT.h){vb.w=EXT.h/aspect();}vb.x=EXT.w/2-vb.w/2;vb.y=EXT.h/2-vb.w*aspect()/2;}
+const visible=s=>(s.kag&&state.kag)||(s.shi&&state.shi);
+const dayHit=(s,d)=>s.near.some(o=>o.d<=(o.l.r||NEAR)&&o.l.days.includes(d));
+const lit=s=>state.day==="all"||dayHit(s,+state.day);
+const gmap=s=>`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;
+const gdir=s=>`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}&travelmode=walking`;
+
+// ---- map ----
+const map=L.map("map",{zoomControl:true,attributionControl:true}).setView([35.1705,136.896],14);
+// 底圖：國土地理院（不需要來源網址，直接開本機檔案也能載入）；載不出來時自動換 CARTO
+const gsiStd=L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",{maxNativeZoom:18,maxZoom:19,attribution:'<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>'});
+const gsi=L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",{maxNativeZoom:18,maxZoom:19,attribution:'<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>'});
+const carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'});
+gsi.addTo(map);
+L.control.layers({"淡色地圖（預設）":gsi,"國土地理院標準地圖":gsiStd,"CARTO 街道圖":carto},null,{position:"topleft"}).addTo(map);
+let gsiOk=0,gsiErr=0;
+gsi.on("tileload",()=>{gsiOk++;});
+gsi.on("tileerror",()=>{gsiErr++;if(gsiOk===0&&gsiErr>=4&&map.hasLayer(gsi)){map.removeLayer(gsi);carto.addTo(map);}});
+function zoomClasses(){const z=map.getZoom(),c=map.getContainer();c.classList.toggle("hide-minor",z<15);c.classList.toggle("hide-shop",z<16);}
+map.on("zoomend",zoomClasses);
+
+const lmMarkers=LM.map(l=>{const m=L.marker([l.lat,l.lng],{icon:L.divIcon({className:"lm-ic"+(l.hotel?" hotel":""),html:"<span></span>",iconSize:l.hotel?[18,18]:[15,15]}),keyboard:false,zIndexOffset:-100}).addTo(map);
+  m.bindTooltip(l.n,{permanent:true,direction:"right",offset:[10,0],className:"lm-tip"+(l.minor?" minor":"")});m._lm=l;return m;});
+
+const PIN={kag:"#c8102e",shi:"#1d7f4b",sold:"#7b8594"};
+function shopSvg(s){
+  const sold=s.st==="完売",plan=/予定/.test(s.st);const both=s.kag&&s.shi&&state.kag&&state.shi;
+  if(both)return `<svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="${PIN.kag}" stroke="#fff" stroke-width="2.5"/><circle cx="15" cy="15" r="9.2" fill="none" stroke="${PIN.shi}" stroke-width="3"/><path d="M15 8.6l1.9 3.9 4.3.5-3.2 2.9.9 4.2L15 17.9l-3.9 2.2.9-4.2-3.2-2.9 4.3-.5z" fill="#fff"/></svg>`;
+  if(s.kag&&state.kag)return `<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 1.8 22.2 12 12 22.2 1.8 12Z" fill="${sold?"#fff":PIN.kag}" stroke="${sold?PIN.sold:"#fff"}" stroke-width="${sold?2.4:2.4}"${plan?' stroke-dasharray="3 2"':""}/>${plan?`<path d="M12 1.8 22.2 12 12 22.2 1.8 12Z" fill="none" stroke="${PIN.kag}" stroke-width="1" opacity=".9"/>`:""}</svg>`;
+  return `<svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7.2" fill="${PIN.shi}" stroke="#fff" stroke-width="2.2"/></svg>`;
+}
+const shopMarkers=new Map();
+function buildShops(){
+  shopMarkers.forEach(m=>m.remove());shopMarkers.clear();
+  for(const s of S){if(!visible(s))continue;
+    const big=s.kag&&s.shi&&state.kag&&state.shi;const sz=big?30:(s.kag&&state.kag?24:18);
+    const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:"ic"+(lit(s)?"":" dim")+(s.id===state.sel?" sel":""),html:shopSvg(s),iconSize:[sz,sz]}),zIndexOffset:s.official?1000:(s.lawson?0:200),riseOnHover:true}).addTo(map);
+    const label=s.official?"★ 一番くじ官方店":s.n;
+    m.bindTooltip(esc(label),{permanent:!s.lawson||s.official,direction:"top",offset:[0,-sz/2],className:"shop-tip"+(s.official?"":" opt")+(big?" t-both":(s.kag&&state.kag?" t-kag":" t-shi"))});
+    m.on("click",()=>select(s.id,false));
+    shopMarkers.set(s.id,m);}
+}
+function refreshDim(){shopMarkers.forEach((m,id)=>{const s=S.find(t=>t.id===id);const el=m.getElement();if(el){el.classList.toggle("dim",!lit(s));el.classList.toggle("sel",id===state.sel);}});
+  lmMarkers.forEach(m=>{const el=m.getElement();if(el)el.classList.toggle("dim",!(state.day==="all"||m._lm.days.includes(+state.day)));});}
+
 function focusDay(){
-  if(state.day==="all"){fitAll();return;}
-  const pts=LM.filter(l=>!l.inu&&l.days.includes(+state.day)).map(l=>P(l.lat,l.lng));
-  let x0=Math.min(...pts.map(p=>p[0])),x1=Math.max(...pts.map(p=>p[0])),y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));
-  const pad=500;x0-=pad;x1+=pad;y0-=pad;y1+=pad;
-  let w=x1-x0,h=y1-y0;if(h/w>aspect())w=h/aspect();
-  vb.w=clampW(w);vb.x=(x0+x1)/2-vb.w/2;vb.y=(y0+y1)/2-vb.w*aspect()/2;
+  if(state.day==="all"){map.fitBounds(L.latLngBounds(LM.filter(l=>!l.far).map(l=>[l.lat,l.lng])).pad(0.08));return;}
+  const pts=LM.filter(l=>!l.nf&&l.days.includes(+state.day)).map(l=>[l.lat,l.lng]);
+  if(pts.length===1){map.setView(pts[0],16);return;}
+  map.fitBounds(L.latLngBounds(pts).pad(0.15),{maxZoom:16});
 }
-function visible(s){return (s.kag&&state.kag)||(s.shi&&state.shi);}
-function dayHit(s,d){return s.near.some(o=>o.d<=NEAR&&o.l.days.includes(d));}
-function lit(s){return state.day==="all"||dayHit(s,+state.day);}
-const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.getElementById("allBtn").onclick=()=>map.fitBounds(L.latLngBounds(LM.filter(l=>!l.far).map(l=>[l.lat,l.lng])).pad(0.08));
+document.getElementById("inuBtn").onclick=()=>map.setView([35.3835,136.9412],16);
 
-let raf=0;function schedule(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;render();});}
-function render(){
-  const k=kpx(),u=1/k,h=vb.w*aspect();
-  svg.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${h}`);
-  let o="";
-  for(const [cls,ids] of LINES){o+=`<polyline class="ln" style="stroke:var(--${cls})" stroke-width="${4*u}" points="${ids.map(i=>P(ST[i][0],ST[i][1]).join(",")).join(" ")}"/>`;}
-  const noLabel={nagoya:1,sakae:1,ozone:1,yaba:1};
-  for(const id in ST){const [la,lo,nm]=ST[id];const [x,y]=P(la,lo);o+=`<circle class="st" cx="${x}" cy="${y}" r="${3.4*u}" stroke-width="${1.3*u}"/>`;if(k>0.05&&(!noLabel[id]||k>0.35))o+=`<text class="stl" x="${x+5*u}" y="${y-5*u}" font-size="${10*u}" stroke-width="${3*u}">${nm}</text>`;}
-  for(const l of LM){if(l.inu)continue;const [x,y]=P(l.lat,l.lng);const on=state.day==="all"||l.days.includes(+state.day);const s=(l.hotel?11:9)*u;const lab=!l.minor||k>0.3;
-    o+=`<g class="${on?"":"dim"}"><rect class="${l.hotel?"hotel":"lm"}" x="${x-s/2}" y="${y-s/2}" width="${s}" height="${s}" rx="${1.5*u}"/>${lab?`<text class="lml" x="${x+7*u}" y="${y+4*u}" font-size="${11.5*u}" stroke-width="${3.2*u}">${l.n}</text>`:""}</g>`;}
-  const list=S.filter(s=>inMain(s)&&visible(s)).sort((a,b)=>(lit(a)-lit(b))||(a.official-b.official));
-  for(const s of list){const [x,y]=P(s.lat,s.lng);const dim=lit(s)?"":"dim";const sold=s.st==="完売",plan=/予定/.test(s.st);
-    let mk;const both=s.kag&&s.shi&&state.kag&&state.shi;
-    if(both){mk=`<circle class="mk-both" cx="${x}" cy="${y}" r="${6.5*u}" stroke-width="${3*u}"/>`;}
-    else if(s.kag&&state.kag){const r=6*u;mk=`<path class="${sold?"mk-sold":"mk-kag"}${plan?" mk-plan":""}" d="M${x} ${y-r}L${x+r} ${y}L${x} ${y+r}L${x-r} ${y}Z" stroke-width="${(sold?1.6:1.2)*u}" ${plan?`stroke-dasharray="${2*u} ${2*u}" style="stroke:var(--ink)"`:""}/>`;}
-    else{mk=`<circle class="mk-shi" cx="${x}" cy="${y}" r="${4.6*u}" stroke-width="${1.2*u}"/>`;}
-    const showL=s.id===state.sel||(k>0.3&&!s.lawson)||k>0.6;const nm=s.official&&k<=0.3&&s.id!==state.sel?"★ 一番くじ官方店":s.n;
-    o+=`<g class="${dim}" data-id="${s.id}"><circle class="hit" cx="${x}" cy="${y}" r="${12*u}"/>${mk}${showL||s.official?`<text class="shl" x="${s.official&&k<=0.3?x-8*u:x+8*u}" y="${s.official&&k<=0.3?y+18*u:y-6*u}" font-size="${10.5*u}" stroke-width="${3*u}" ${s.official&&k<=0.3?'text-anchor="end"':""}>${esc(nm)}</text>`:""}</g>`;}
-  if(state.sel){const s=S.find(t=>t.id===state.sel);if(s&&inMain(s)){const [x,y]=P(s.lat,s.lng);o+=`<circle class="selring" cx="${x}" cy="${y}" r="${12*u}" stroke-width="${2.2*u}"/>`;}}
-  svg.innerHTML=o;
-  // scale bar
-  const opts=[100,200,500,1000,2000,3000];let m=opts[0];for(const c of opts){if(c*k<=130)m=c;}
-  document.getElementById("scaleBar").style.width=Math.round(m*k)+"px";
-  document.getElementById("scaleTxt").textContent=m>=1000?(m/1000)+" km":m+" m";
-}
-
-function zoomAt(cx,cy,f){const r=svg.getBoundingClientRect();const k=kpx();const wx=vb.x+(cx-r.left)/k,wy=vb.y+(cy-r.top)/k;vb.w=clampW(vb.w*f);const k2=kpx();vb.x=wx-(cx-r.left)/k2;vb.y=wy-(cy-r.top)/k2;schedule();}
-svg.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,Math.exp(e.deltaY*0.0015));},{passive:false});
-const pts=new Map();let start=null,moved=false;
-function begin(){const v=[...pts.values()];start={vb:{...vb},k:kpx(),p:v.map(p=>({...p}))};}
-svg.addEventListener("pointerdown",e=>{svg.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pts.size===1)moved=false;begin();});
-svg.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId)||!start)return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const v=[...pts.values()];
-  if(v.length===1&&start.p.length===1){const dx=v[0].x-start.p[0].x,dy=v[0].y-start.p[0].y;if(Math.hypot(dx,dy)>5)moved=true;if(moved){vb.x=start.vb.x-dx/start.k;vb.y=start.vb.y-dy/start.k;schedule();}}
-  else if(v.length>=2&&start.p.length>=2){moved=true;const r=svg.getBoundingClientRect();const d0=Math.hypot(start.p[0].x-start.p[1].x,start.p[0].y-start.p[1].y)||1,d1=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y)||1;
-    const m0={x:(start.p[0].x+start.p[1].x)/2,y:(start.p[0].y+start.p[1].y)/2},m1={x:(v[0].x+v[1].x)/2,y:(v[0].y+v[1].y)/2};
-    const wx=start.vb.x+(m0.x-r.left)/start.k,wy=start.vb.y+(m0.y-r.top)/start.k;vb.w=clampW(start.vb.w*d0/d1);const k2=kpx();vb.x=wx-(m1.x-r.left)/k2;vb.y=wy-(m1.y-r.top)/k2;schedule();}});
-function end(e){if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);
-  if(!moved&&pts.size===0&&e.type==="pointerup"){const el=document.elementFromPoint(e.clientX,e.clientY);const g=el&&el.closest&&el.closest("[data-id]");if(g)select(g.getAttribute("data-id"),false);}
-  if(pts.size>0)begin();else start=null;}
-svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
-document.getElementById("zin").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,0.7);};
-document.getElementById("zout").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/0.7);};
-document.getElementById("zreset").onclick=()=>{fitAll();schedule();};
-
-function gmap(s){return `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;}
+// ---- info / list ----
 function prodTags(s){return (s.kag?`<span class="tag kag">カグラバチ</span>`:"")+(s.shi?`<span class="tag shi">進擊的巨人</span>`:"");}
 function stTag(s){if(s.st==="完売")return `<span class="tag sold">官網標完売</span>`;if(/予定/.test(s.st))return `<span class="tag plan">官網寫 10 月下旬開賣</span>`;return "";}
 function select(id,center){state.sel=id;const s=S.find(t=>t.id===id);if(!s)return;
-  const near=s.near.filter(o=>o.d<=NEAR).slice(0,3);const nt=near.length?near.map(o=>`${esc(o.l.n)} 約 <span class="mono">${o.d} m</span>（${o.l.days.map(d=>"Day "+d).join("、")}）`).join("；"):`最近的行程地點是 ${esc(s.near[0].l.n)}，約 <span class="mono">${s.near[0].d} m</span>`;
-  document.getElementById("info").innerHTML=`<div class="tags">${s.official?`<span class="tag star">第一站</span>`:""}${prodTags(s)}${stTag(s)}</div><div class="name">${esc(s.n)}</div><div class="addr">${esc(s.a)}</div><div class="near">${nt}</div><a class="gm" href="${gmap(s)}" target="_blank" rel="noopener">在 Google 地圖開啟</a>`;
+  const near=s.near.filter(o=>o.d<=(o.l.r||NEAR)).slice(0,3);
+  const nt=near.length?near.map(o=>`${esc(o.l.n)} 約 <span class="mono">${o.d} m</span>（${o.l.days.map(d=>"Day "+d).join("、")}）`).join("；"):`最近的行程地點是 ${esc(s.near[0].l.n)}，約 <span class="mono">${s.near[0].d} m</span>`;
+  const me=state.me?`<div class="near">離你 <b class="mono">${dist(state.me,s)} m</b>，走路約 ${walk(dist(state.me,s))} 分（直線估算）</div>`:"";
+  document.getElementById("info").innerHTML=`<div class="tags">${s.official?`<span class="tag star">第一站</span>`:""}${prodTags(s)}${stTag(s)}</div><div class="name">${esc(s.n)}</div><div class="addr">${esc(s.a)}</div>${me}<div class="near">${nt}</div><div class="tags"><a class="gm" href="${gdir(s)}" target="_blank" rel="noopener">Google 地圖步行導航</a><a class="gm" href="${gmap(s)}" target="_blank" rel="noopener">看位置</a></div>`;
   document.querySelectorAll(".row").forEach(r=>r.classList.toggle("sel",r.dataset.id===id));
-  if(center){if(inMain(s)){const [x,y]=P(s.lat,s.lng);vb.w=clampW(Math.min(vb.w,1600));vb.x=x-vb.w/2;vb.y=y-vb.w*aspect()/2;document.querySelector(".mapbox").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});}else{document.querySelector(".inset").scrollIntoView({block:"nearest"});}}
-  schedule();}
-
-function glyph(s){if(s.kag&&s.shi)return `<svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" style="fill:var(--kag);stroke:var(--shi);stroke-width:2.5"/></svg>`;if(s.kag)return `<svg class="glyph" viewBox="0 0 14 14"><path d="M7 1 13 7 7 13 1 7Z" style="fill:${s.st==="完売"?"none":"var(--kag)"};stroke:var(--sold)"/></svg>`;return `<svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" style="fill:var(--shi)"/></svg>`;}
-function renderList(){
-  const days=state.day==="all"?[1,3,4,5]:[+state.day];let h="";
-  for(const d of days){const lms=LM.filter(l=>l.days.includes(d));
-    const rows=S.filter(s=>visible(s)).map(s=>{const o=s.near.find(x=>x.d<=NEAR&&x.l.days.includes(d));return o?{s,o}:null;}).filter(Boolean).sort((a,b)=>(b.s.official-a.s.official)||(a.s.lawson-b.s.lawson)||(a.o.d-b.o.d));
-    h+=`<header><h2>${DAYS[d]}</h2><span>行程地點 ${NEAR} m 內 · ${rows.length} 家</span></header>`;
-    if(!rows.length){h+=`<p class="empty">這天的行程地點附近沒有符合篩選的店。</p>`;continue;}
-    h+=`<div class="rows">`+rows.map(({s,o})=>`<div class="row${s.id===state.sel?" sel":""}" tabindex="0" role="button" data-id="${s.id}">${glyph(s)}<div class="t"><b>${esc(s.n)}</b><small>${s.kag&&s.shi?"兩套都有":s.kag?"カグラバチ":"進擊的巨人"}${s.st==="完売"?" · 官網標完売":/予定/.test(s.st)?" · 10 月下旬開賣":""} · 離 ${esc(o.l.n)}</small></div><span class="d">${o.d} m</span></div>`).join("")+`</div>`;}
-  const box=document.getElementById("list");box.innerHTML=h;
-  box.querySelectorAll(".row").forEach(r=>{r.onclick=()=>select(r.dataset.id,true);r.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(r.dataset.id,true);}};});
+  refreshDim();
+  if(center){map.setView([s.lat,s.lng],Math.max(map.getZoom(),17));document.querySelector(".mapbox").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});}
 }
+function glyph(s){if(s.kag&&s.shi)return `<svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" style="fill:var(--kag);stroke:var(--shi);stroke-width:2.5"/></svg>`;if(s.kag)return `<svg class="glyph" viewBox="0 0 14 14"><path d="M7 1 13 7 7 13 1 7Z" style="fill:${s.st==="完売"?"none":"var(--kag)"};stroke:var(--sold)"/></svg>`;return `<svg class="glyph" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" style="fill:var(--shi)"/></svg>`;}
+function rowHtml(s,sub,d){return `<div class="row${s.id===state.sel?" sel":""}" tabindex="0" role="button" data-id="${s.id}">${glyph(s)}<div class="t"><b>${esc(s.n)}</b><small>${sub}</small></div><span class="d">${d}</span></div>`;}
+function kind(s){return (s.kag&&s.shi?"兩套都有":s.kag?"カグラバチ":"進擊的巨人")+(s.st==="完売"?" · 官網標完売":/予定/.test(s.st)?" · 10 月下旬開賣":"");}
+function bindRows(box){box.querySelectorAll(".row").forEach(r=>{r.onclick=()=>select(r.dataset.id,true);r.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(r.dataset.id,true);}};});}
+function renderList(){
+  const days=state.day==="all"?[1,2,3,4,5,9]:[+state.day];let h="";
+  for(const d of days){
+    const rows=S.filter(visible).map(s=>{const o=s.near.find(x=>x.d<=(x.l.r||NEAR)&&x.l.days.includes(d));return o?{s,o}:null;}).filter(Boolean).sort((a,b)=>(b.s.official-a.s.official)||(a.s.lawson-b.s.lawson)||(a.o.d-b.o.d));
+    h+=`<header><h2>${DAYS[d]}</h2><span>${d===9?"千種站 1.3 km":"行程地點 "+NEAR+" m"} 內 · ${rows.length} 家</span></header>`;
+    h+=rows.length?`<div class="rows">`+rows.map(({s,o})=>rowHtml(s,`${kind(s)} · 離 ${esc(o.l.n)}`,`${o.d} m`)).join("")+`</div>`:`<p class="empty">這天的行程地點附近沒有符合篩選的店。</p>`;}
+  const box=document.getElementById("list");box.innerHTML=h;bindRows(box);
+}
+
+// ---- geolocation ----
+let watchId=null,meDot=null,meAcc=null,firstFix=true;
+const locBtn=document.getElementById("locBtn"),locMsg=document.getElementById("locMsg"),nearBox=document.getElementById("nearme");
+function msg(t,err){locMsg.textContent=t;locMsg.hidden=!t;locMsg.classList.toggle("err",!!err);}
+function renderNear(){
+  if(!state.me){nearBox.hidden=true;return;}
+  const list=S.filter(visible).map(s=>({s,d:dist(state.me,s)})).sort((a,b)=>a.d-b.d).slice(0,6);
+  nearBox.hidden=false;
+  nearBox.innerHTML=`<h2>離你最近的一番賞店</h2><div class="rows">`+list.map(({s,d})=>rowHtml(s,kind(s),`${d} m<br>約 ${walk(d)} 分`)).join("")+`</div><p class="near">直線距離，實際走路會比較遠；點一列看詳情和步行導航。</p>`;
+  bindRows(nearBox);
+}
+function onPos(p){
+  const {latitude:lat,longitude:lng,accuracy}=p.coords;state.me={lat,lng};
+  if(!meDot){meAcc=L.circle([lat,lng],{radius:accuracy,color:"#1a73e8",weight:1,fillColor:"#1a73e8",fillOpacity:.12,interactive:false}).addTo(map);
+    meDot=L.circleMarker([lat,lng],{radius:7,color:"#fff",weight:3,fillColor:"#1a73e8",fillOpacity:1}).addTo(map).bindTooltip("你在這裡",{direction:"top",offset:[0,-8]});}
+  else{meDot.setLatLng([lat,lng]);meAcc.setLatLng([lat,lng]).setRadius(accuracy);}
+  if(firstFix){firstFix=false;map.setView([lat,lng],16);}
+  msg(`已定位，誤差約 ${Math.round(accuracy)} m。再按一次「我的位置」關閉。`);
+  renderNear();if(state.sel)select(state.sel,false);
+}
+function onErr(e){
+  const t=e.code===1?"沒有取得位置權限：請到手機設定允許這個網頁使用位置，再按一次。":e.code===3?"定位逾時，請到室外或稍後再按一次。":"暫時無法取得位置，請稍後再試。";
+  msg(t,true);stopLoc(true);
+}
+function stopLoc(keepMsg){if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;locBtn.setAttribute("aria-pressed","false");
+  if(meDot){meDot.remove();meAcc.remove();meDot=meAcc=null;}state.me=null;firstFix=true;renderNear();if(!keepMsg)msg("");if(state.sel)select(state.sel,false);}
+locBtn.onclick=()=>{
+  if(watchId!==null){stopLoc();return;}
+  if(!("geolocation" in navigator)){msg("這個瀏覽器不支援定位。",true);return;}
+  if(!window.isSecureContext){msg("定位需要用 https 網址開啟這個頁面（例如 GitHub 上的網址），直接開本機檔案無法定位。",true);return;}
+  msg("定位中…");locBtn.setAttribute("aria-pressed","true");
+  watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:10000,timeout:20000});
+};
+
+// ---- controls ----
 function syncChips(){document.querySelectorAll("[data-day]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.day===state.day)));document.getElementById("p-kag").setAttribute("aria-pressed",String(state.kag));document.getElementById("p-shi").setAttribute("aria-pressed",String(state.shi));}
-document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.day=b.dataset.day;save();syncChips();focusDay();renderList();schedule();});
-document.getElementById("p-kag").onclick=()=>{state.kag=!state.kag;if(!state.kag&&!state.shi)state.shi=true;save();syncChips();renderList();schedule();};
-document.getElementById("p-shi").onclick=()=>{state.shi=!state.shi;if(!state.kag&&!state.shi)state.kag=true;save();syncChips();renderList();schedule();};
+document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.day=b.dataset.day;save();syncChips();focusDay();renderList();refreshDim();});
+function toggleProd(k){state[k]=!state[k];if(!state.kag&&!state.shi)state[k==="kag"?"shi":"kag"]=true;save();syncChips();buildShops();renderList();renderNear();}
+document.getElementById("p-kag").onclick=()=>toggleProd("kag");
+document.getElementById("p-shi").onclick=()=>toggleProd("shi");
 
-// Inuyama inset
-(function(){const el=document.getElementById("inu");const L0=136.932,A0=35.392,sx=400/((136.952-L0)*91100),sy=sx;const Q=(la,lo)=>[(lo-L0)*91100*sx,(A0-la)*110950*sy];
-  let o="";const pts=LM.filter(l=>l.inu);
-  const tri=[Q(35.38032,136.945692),Q(35.382443,136.939401),Q(35.38836,136.939177)];o+=`<polyline points="${tri.map(p=>p.join(",")).join(" ")}" style="fill:none;stroke:var(--line);stroke-width:3;stroke-dasharray:6 5"/>`;
-  for(const l of pts){const [x,y]=Q(l.lat,l.lng);o+=`<rect x="${x-6}" y="${y-6}" width="12" height="12" rx="2" class="lm"/><text x="${x+10}" y="${y+5}" font-size="15" class="lml" stroke-width="4">${l.n}</text>`;}
-  const [x,y]=Q(35.38055,136.939872);o+=`<circle cx="${x}" cy="${y}" r="8" class="mk-shi" stroke-width="2"/><text x="${x-12}" y="${y+24}" font-size="14" class="shl" stroke-width="4" text-anchor="end">Lawson 犬山本町店</text>`;
-  const bar=200*91100/91100*sx;o+=`<line x1="20" y1="280" x2="${20+bar}" y2="280" style="stroke:var(--ink);stroke-width:2"/><text x="20" y="272" font-size="12" class="stl" stroke-width="3">200 m</text>`;
-  el.innerHTML=o;})();
-
-syncChips();
-function boot(){focusDay();renderList();render();}
-if(document.readyState==="complete")boot();else window.addEventListener("load",boot);
-window.addEventListener("resize",schedule);
+if(innerWidth<560)document.getElementById("legend").removeAttribute("open");
+syncChips();buildShops();focusDay();zoomClasses();renderList();refreshDim();
 })();
 </script>
 </body>
